@@ -310,7 +310,7 @@ export default function Dashboard() {
   const [currentSchemeIndex, setCurrentSchemeIndex] = useState(0);
   const [weatherData, setWeatherData] = useState(null);
   const [hourlyData, setHourlyData] = useState(null);
-  const [loading, setLoading] = useState(true);+
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showHourlyModal, setShowHourlyModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);

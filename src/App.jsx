@@ -11,8 +11,8 @@ function App() {
 
   return (
     <>
-    {/* <Dashboard></Dashboard> */}
-    <Chats></Chats>
+    <Dashboard></Dashboard>
+    {/* <Chats></Chats> */}
     </>
   )
 }
