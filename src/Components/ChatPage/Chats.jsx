@@ -1,43 +1,143 @@
-import React, { useState } from 'react';
-import { Menu, Send, User, MessageCircle, Clock, Settings, HelpCircle, X, Minus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Menu, Send, User, MessageCircle, Clock, Settings, HelpCircle, X, Loader } from 'lucide-react';
 
 export default function Chats() {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! How can I help you today?", isBot: true },
-    { id: 2, text: "I need help with my project", isBot: false },
-    { id: 3, text: "I'd be happy to help! Could you tell me more about your project and what specific assistance you need?", isBot: true },
-    { id: 4, text: "I'm working on a React application and need to implement a chat interface", isBot: false },
-    { id: 5, text: "That sounds like an interesting project! I can definitely help you with building a React chat interface. What specific features are you looking to implement?", isBot: true }
+    { id: 1, text: "Hello! How can I help you today?", isBot: true, timestamp: new Date() }
   ]);
   
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      const newMessage = {
-        id: messages.length + 1,
-        text: inputMessage,
-        isBot: false
-      };
-      setMessages([...messages, newMessage]);
-      setInputMessage('');
+  // Scroll to bottom when new messages are added
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // API call to send message to bot
+  const sendMessageToAPI = async (userMessage) => {
+    try {
+      // Replace this URL with your actual API endpoint
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          conversation_id: 'chat_' + Date.now(), // You can implement proper session management
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response from API');
+      }
+
+      const data = await response.json();
+      return data.response || data.message || "I'm sorry, I couldn't process your request.";
+    } catch (error) {
+      console.error('API Error:', error);
+      // Fallback response when API fails
+      return generateFallbackResponse(userMessage);
+    }
+  };
+
+  // Fallback response generator (for demo purposes when API is not available)
+  const generateFallbackResponse = (userMessage) => {
+    const responses = [
+      "That's interesting! Could you tell me more about that?",
+      "I understand. How can I help you with this?",
+      "Thanks for sharing that. What would you like to know?",
+      "I see. Is there anything specific you'd like assistance with?",
+      "That sounds important. How can I support you?",
+      "Interesting perspective! What are your thoughts on this?",
+      "I appreciate you bringing this up. What's your next step?",
+      "That's a great question. Let me help you with that.",
+      "I understand your concern. Here's what I think...",
+      "Thanks for the details. Based on what you've said..."
+    ];
+    
+    // Simple keyword-based responses for demo
+    const lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.includes('help')) {
+      return "I'm here to help! What specific assistance do you need?";
+    } else if (lowerMessage.includes('weather')) {
+      return "I can help with weather information! What location are you interested in?";
+    } else if (lowerMessage.includes('thank')) {
+      return "You're welcome! Is there anything else I can help you with?";
+    } else if (lowerMessage.includes('bye') || lowerMessage.includes('goodbye')) {
+      return "Goodbye! Feel free to return anytime if you need assistance.";
+    } else {
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (inputMessage.trim() && !isLoading) {
+      const userMessage = inputMessage.trim();
       
-      setTimeout(() => {
-        const botResponse = {
-          id: messages.length + 2,
-          text: "Thanks for your message! I'm processing your request and will get back to you shortly.",
-          isBot: true
+      // Add user message immediately
+      const newUserMessage = {
+        id: Date.now(),
+        text: userMessage,
+        isBot: false,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, newUserMessage]);
+      setInputMessage('');
+      setIsLoading(true);
+
+      try {
+        // Get bot response from API
+        const botResponse = await sendMessageToAPI(userMessage);
+        
+        // Add bot response
+        const newBotMessage = {
+          id: Date.now() + 1,
+          text: botResponse,
+          isBot: true,
+          timestamp: new Date()
         };
-        setMessages(prev => [...prev, botResponse]);
-      }, 1000);
+        
+        setMessages(prev => [...prev, newBotMessage]);
+      } catch (error) {
+        console.error('Error sending message:', error);
+        // Add error message
+        const errorMessage = {
+          id: Date.now() + 1,
+          text: "I'm sorry, I'm having trouble connecting right now. Please try again.",
+          isBot: true,
+          timestamp: new Date(),
+          isError: true
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const formatTime = (timestamp) => {
+    return timestamp.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
   };
 
   const sidebarStyle = {
@@ -160,24 +260,6 @@ export default function Chats() {
                 History
               </button>
               
-              <button style={{ 
-                width: '100%',
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '10px 12px', 
-                backgroundColor: 'transparent', 
-                border: 'none',
-                borderRadius: '6px',
-                color: 'white',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#334155'}
-              onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
-                <Clock size={16} style={{ marginRight: '12px' }} />
-                History
-              </button>
-              
               <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button style={{ 
                   width: '100%',
@@ -216,6 +298,21 @@ export default function Chats() {
                 </button>
               </div>
             </div>
+
+            {/* Connection Status */}
+            <div style={{ 
+              position: 'absolute', 
+              bottom: '20px', 
+              left: '20px', 
+              right: '20px',
+              padding: '8px 12px',
+              backgroundColor: isLoading ? '#f59e0b' : '#10b981',
+              borderRadius: '6px',
+              fontSize: '12px',
+              textAlign: 'center'
+            }}>
+              {isLoading ? 'AI is thinking...' : 'Connected'}
+            </div>
           </div>
         )}
       </div>
@@ -244,7 +341,12 @@ export default function Chats() {
             >
               {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>AI Chat Assistant</h1>
+            <div>
+              <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>AI Chat Assistant</h1>
+              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>
+                {messages.length > 1 ? `${messages.length - 1} messages` : 'Start a conversation'}
+              </p>
+            </div>
           </div>
           <div style={{ 
             width: '32px', 
@@ -262,7 +364,7 @@ export default function Chats() {
         {/* Messages Container */}
         <div style={messagesContainerStyle}>
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <div 
                 key={message.id} 
                 style={{ 
@@ -277,7 +379,7 @@ export default function Chats() {
                   <div style={{ 
                     width: '32px', 
                     height: '32px', 
-                    backgroundColor: '#3b82f6', 
+                    backgroundColor: message.isError ? '#ef4444' : '#3b82f6', 
                     borderRadius: '50%', 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -291,66 +393,141 @@ export default function Chats() {
                   </div>
                 )}
                 
-                <div style={{
-                  backgroundColor: message.isBot ? '#e2e8f0' : '#3b82f6',
-                  color: message.isBot ? '#1f2937' : 'white',
-                  padding: '12px 16px',
-                  borderRadius: '16px',
-                  maxWidth: '400px',
-                  fontSize: '14px',
-                  lineHeight: '1.5',
-                  borderTopLeftRadius: message.isBot ? '4px' : '16px',
-                  borderTopRightRadius: message.isBot ? '16px' : '4px'
-                }}>
-                  {message.text}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: message.isBot ? 'flex-start' : 'flex-end' }}>
+                  <div style={{
+                    backgroundColor: message.isBot ? (message.isError ? '#fef2f2' : '#e2e8f0') : '#3b82f6',
+                    color: message.isBot ? (message.isError ? '#dc2626' : '#1f2937') : 'white',
+                    padding: '12px 16px',
+                    borderRadius: '16px',
+                    maxWidth: '400px',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    borderTopLeftRadius: message.isBot ? '4px' : '16px',
+                    borderTopRightRadius: message.isBot ? '16px' : '4px',
+                    wordWrap: 'break-word'
+                  }}>
+                    {message.text}
+                  </div>
+                  <div style={{ 
+                    fontSize: '11px', 
+                    color: '#64748b', 
+                    marginTop: '4px',
+                    marginLeft: message.isBot ? '0' : 'auto',
+                    marginRight: message.isBot ? 'auto' : '0'
+                  }}>
+                    {formatTime(message.timestamp)}
+                  </div>
                 </div>
               </div>
             ))}
+            
+            {/* Loading indicator */}
+            {isLoading && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'flex-start', 
+                gap: '12px',
+                marginBottom: '20px',
+                justifyContent: 'flex-start'
+              }}>
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  backgroundColor: '#3b82f6', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  flexShrink: 0
+                }}>
+                  <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                </div>
+                <div style={{
+                  backgroundColor: '#e2e8f0',
+                  color: '#1f2937',
+                  padding: '12px 16px',
+                  borderRadius: '16px',
+                  borderTopLeftRadius: '4px',
+                  fontSize: '14px',
+                  fontStyle: 'italic'
+                }}>
+                  AI is typing...
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
           </div>
         </div>
         
         {/* Message Input */}
         <div style={inputContainerStyle}>
-          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <input
-              type="text"
+          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
+            <textarea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message here..."
+              onKeyDown={handleKeyPress}
+              placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)"
+              disabled={isLoading}
               style={{
                 flex: 1,
                 padding: '12px 16px',
                 backgroundColor: 'white',
                 border: '1px solid #d1d5db',
-                borderRadius: '24px',
+                borderRadius: '20px',
                 fontSize: '14px',
-                outline: 'none'
+                outline: 'none',
+                resize: 'none',
+                minHeight: '48px',
+                maxHeight: '120px',
+                overflowY: 'auto',
+                fontFamily: 'inherit',
+                opacity: isLoading ? 0.6 : 1
               }}
+              rows={1}
             />
             <button
               onClick={handleSendMessage}
+              disabled={!inputMessage.trim() || isLoading}
               style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#3b82f6',
+                backgroundColor: (!inputMessage.trim() || isLoading) ? '#9ca3af' : '#3b82f6',
                 border: 'none',
                 borderRadius: '50%',
                 color: 'white',
-                cursor: 'pointer',
+                cursor: (!inputMessage.trim() || isLoading) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'background-color 0.2s'
               }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#2563eb'}
-              onMouseOut={(e) => e.target.style.backgroundColor = '#3b82f6'}
+              onMouseOver={(e) => {
+                if (!isLoading && inputMessage.trim()) {
+                  e.target.style.backgroundColor = '#2563eb'
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isLoading && inputMessage.trim()) {
+                  e.target.style.backgroundColor = '#3b82f6'
+                }
+              }}
             >
-              <Send size={18} />
+              {isLoading ? <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={18} />}
             </button>
           </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
