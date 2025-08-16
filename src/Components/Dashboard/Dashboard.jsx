@@ -8,7 +8,7 @@ import cropsbcg from '../../assets/cropsbcg.png';
 export default function Dashboard() {
   const [message, setMessage] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentSchemeIndex, setCurrentSchemeIndex] = useState(0);
+  const [ setCurrentSchemeIndex] = useState(0);
   const [weatherData, setWeatherData] = useState(null);
   const [hourlyData, setHourlyData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -183,7 +183,7 @@ export default function Dashboard() {
     },
     bannerText: {
       color: 'white',
-      fontSize: '16px',
+      fontSize: '20px',
       fontWeight: '600',
       padding: '0 40px',
       display: 'flex',
@@ -368,7 +368,7 @@ export default function Dashboard() {
       marginBottom: '24px'
     },
     questionCard: {
-      backgroundColor: 'white',
+      backgroundColor: '#d4d4ae',
       padding: '20px',
       borderRadius: '12px',
       boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
@@ -410,7 +410,7 @@ export default function Dashboard() {
     categoryTitle: {
       fontSize: '22px',
       fontWeight: '600',
-      color: '#22c55e',
+      color: "white",
       marginBottom: '20px',
       textAlign: 'center'
     },
@@ -425,10 +425,8 @@ export default function Dashboard() {
       bottom: '0vw',
       left: 0,
       right: 0,
-      backgroundColor: 'white',
       padding: '24px',
       zIndex: 40,
-      marginTop: '20px',
       boxShadow: '0 -10px 25px rgba(0,0,0,0.1)'
     },
     inputWrapper: {
@@ -1174,7 +1172,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      )}  
+      )}
 
       {/* Fixed Input Box */}
       <div style={styles.inputContainer}>

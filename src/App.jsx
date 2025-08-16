@@ -10,12 +10,13 @@ import ProfilePage from './Components/Profile/Profile';
 function App() {
   return (
     <>
-      <Dashboard></Dashboard> 
+      <Dashboard></Dashboard>
       {/* <Chats></Chats> */}
       {/* <SignUp></SignUp>  */}
-      {/* <ProfilePage></ProfilePage>  */}
+      {/* <ProfilePage></ProfilePage> */}
+      <ProfilePage />
     </>
   )
 }
-
++3
 export default App
