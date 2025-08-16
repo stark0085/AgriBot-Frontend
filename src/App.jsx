@@ -1,22 +1,80 @@
-import React, { useState } from 'react';
-import './App.css'
-import Chats from './Components/ChatPage/Chats'
-import Dashboard from './Components/Dashboard/Dashboard'
-import './index.css'
-import SignUp from './Components/LoginPage/signup'
-import ProfilePage from './Components/Profile/Profile';
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ProfileProvider from './Components/Contexts/ProfileProvider';
+import { ProtectedRoute, PublicRoute } from './Components/Contexts/ProtectedRoute';
+import './App.css';
+import './index.css';
 
+// Import your components
+import Chats from './Components/ChatPage/Chats';
+import Dashboard from './Components/Dashboard/Dashboard';
+import SignUp from './Components/LoginPage/signup';
+import ProfilePage from './Components/Profile/Profile';
+import LoginForm from './Components/LoginPage/login';
+import LanguageGridSelector from './Components/LoginPage/Language';
 
 function App() {
   return (
-    <>
-      <Dashboard></Dashboard>
-      {/* <Chats></Chats> */}
-      {/* <SignUp></SignUp>  */}
-      {/* <ProfilePage></ProfilePage> */}
-      <ProfilePage />
-    </>
-  )
+    <ProfileProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            {/* Public Route - Language Selection (always accessible) */}
+            <Route path="/" element={<LanguageGridSelector />} />
+            <Route path="/languages" element={<LanguageGridSelector />} />
+            
+            {/* Public Routes - Only for non-authenticated users */}
+            <Route 
+              path="/login" 
+              element={
+                <PublicRoute>
+                  <LoginForm />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/signup" 
+              element={
+                <PublicRoute>
+                  <SignUp />
+                </PublicRoute>
+              } 
+            />
+            
+            {/* Protected Routes - Only for authenticated users */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chats" 
+              element={
+                <ProtectedRoute>
+                  <Chats />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Catch all route - redirect to home (language selection) */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </ProfileProvider>
+  );
 }
-+3
-export default App
+
+export default App;

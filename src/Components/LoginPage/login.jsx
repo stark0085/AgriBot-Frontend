@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+// Components/LoginPage/login.js
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import farmer from '../../Assets/HappyFarmer.png';
+import { ProfileContext } from '../Contexts/ProfileProvider';
 
 const LoginForm = () => {
+  const { login } = useContext(ProfileContext);
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -16,10 +23,62 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    }
+    
+    return newErrors;
+  };
+
+  const handleSubmit = async () => {
+    const formErrors = validateForm();
+    
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const result = await login(formData);
+      
+      if (result.success) {
+        // Redirect to dashboard on successful login
+        navigate('/dashboard');
+      } else {
+        setErrors({ submit: result.error || 'Login failed. Please try again.' });
+      }
+    } catch {
+      setErrors({ submit: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
   };
 
   return (
@@ -30,7 +89,8 @@ const LoginForm = () => {
         padding: '60px 80px', 
         backgroundColor: 'white',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        justifyContent: 'center'
       }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
           <h1 style={{ 
@@ -43,6 +103,19 @@ const LoginForm = () => {
             Login
           </h1>
           
+          {errors.submit && (
+            <div style={{
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              marginBottom: '24px',
+              fontSize: '14px'
+            }}>
+              {errors.submit}
+            </div>
+          )}
+          
           <div>
             {/* Email Address */}
             <div style={{ marginBottom: '32px' }}>
@@ -51,57 +124,87 @@ const LoginForm = () => {
                 fontSize: '18px', 
                 fontWeight: '600', 
                 color: '#374151', 
-                marginBottom: '12px' 
+                marginBottom: '8px'
               }}>
-                Email Address <span style={{ color: '#ef4444' }}>*</span>
+                Email Address
               </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter your email address"
+                onKeyPress={handleKeyPress}
                 style={{
-                  width: '90%',
-                  height: '56px',
-                  padding: '0 16px',
-                  border: '2px solid #d1d5db',
-                  borderRadius: '12px',
+                  width: '100%',
+                  padding: '16px',
                   fontSize: '16px',
+                  border: errors.email ? '2px solid #dc2626' : '2px solid #e5e7eb',
+                  borderRadius: '12px',
                   outline: 'none',
-                  backgroundColor: '#fff'
+                  transition: 'border-color 0.2s',
+                  backgroundColor: '#f9fafb',
+                  boxSizing: 'border-box'
                 }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.backgroundColor = 'white';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = errors.email ? '#dc2626' : '#e5e7eb';
+                  e.target.style.backgroundColor = '#f9fafb';
+                }}
+                placeholder="Enter your email"
               />
+              {errors.email && (
+                <p style={{ 
+                  color: '#dc2626', 
+                  fontSize: '14px', 
+                  marginTop: '6px' 
+                }}>
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             {/* Password */}
-            <div style={{ marginBottom: '48px' }}>
+            <div style={{ marginBottom: '32px' }}>
               <label style={{ 
                 display: 'block', 
                 fontSize: '18px', 
                 fontWeight: '600', 
                 color: '#374151', 
-                marginBottom: '12px' 
+                marginBottom: '8px'
               }}>
-                Password <span style={{ color: '#ef4444' }}>*</span>
+                Password
               </label>
               <div style={{ position: 'relative' }}>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="Enter your password"
+                  onKeyPress={handleKeyPress}
                   style={{
-                    width: '80%',
-                    height: '56px',
-                    padding: '0 56px 0 16px',
-                    border: '2px solid #d1d5db',
-                    borderRadius: '12px',
+                    width: '100%',
+                    padding: '16px',
+                    paddingRight: '50px',
                     fontSize: '16px',
+                    border: errors.password ? '2px solid #dc2626' : '2px solid #e5e7eb',
+                    borderRadius: '12px',
                     outline: 'none',
-                    backgroundColor: '#fff'
+                    transition: 'border-color 0.2s',
+                    backgroundColor: '#f9fafb',
+                    boxSizing: 'border-box'
                   }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.backgroundColor = 'white';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = errors.password ? '#dc2626' : '#e5e7eb';
+                    e.target.style.backgroundColor = '#f9fafb';
+                  }}
+                  placeholder="Enter your password"
                 />
                 <button
                   type="button"
@@ -111,85 +214,145 @@ const LoginForm = () => {
                     right: '16px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    border: 'none',
                     background: 'none',
+                    border: 'none',
                     cursor: 'pointer',
-                    color: '#9ca3af',
+                    color: '#6b7280',
                     padding: '4px'
                   }}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password && (
+                <p style={{ 
+                  color: '#dc2626', 
+                  fontSize: '14px', 
+                  marginTop: '6px' 
+                }}>
+                  {errors.password}
+                </p>
+              )}
             </div>
 
-            {/* Submit Button */}
+            {/* Forgot Password Link */}
+            <div style={{ textAlign: 'right', marginBottom: '32px' }}>
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  alert('Forgot password functionality would be implemented here');
+                }}
+                style={{
+                  color: '#3b82f6',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+                onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+                onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+              >
+                Forgot your password?
+              </a>
+            </div>
+
+            {/* Login Button */}
             <button
               onClick={handleSubmit}
+              disabled={isSubmitting}
               style={{
                 width: '100%',
-                height: '56px',
-                backgroundColor: '#25eb5aff',
-                color: 'white',
+                padding: '16px',
                 fontSize: '18px',
                 fontWeight: '600',
+                color: 'white',
+                backgroundColor: isSubmitting ? '#9ca3af' : '#22c55e',
                 border: 'none',
                 borderRadius: '12px',
-                cursor: 'pointer',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 transition: 'background-color 0.2s',
-                marginBottom: '24px'
+                marginBottom: '32px'
               }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
-              onMouseOut={(e) => e.target.style.backgroundColor = '#25eb5aff'}
+              onMouseOver={(e) => {
+                if (!isSubmitting) e.target.style.backgroundColor = '#16a34a';
+              }}
+              onMouseOut={(e) => {
+                if (!isSubmitting) e.target.style.backgroundColor = '#22c55e';
+              }}
             >
-              Login
+              {isSubmitting ? 'Signing In...' : 'Sign In'}
             </button>
 
-            {/* Don't have an account */}
+            {/* Sign Up Link */}
             <div style={{ textAlign: 'center' }}>
-              <p style={{ 
-                fontSize: '16px', 
-                color: '#6b7280',
-                margin: '0'
-              }}>
+              <span style={{ color: '#6b7280', fontSize: '16px' }}>
                 Don't have an account?{' '}
-                <a 
-                  href="/signup" 
-                  style={{ 
-                    color: '#2563eb',
+                <button
+                  onClick={() => navigate('/signup')}
+                  style={{
+                    color: '#3b82f6',
                     textDecoration: 'none',
-                    fontWeight: '600'
+                    fontWeight: '600',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontSize: '16px'
                   }}
-                  onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
-                  onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+                  onMouseOver={e => e.target.style.textDecoration = 'underline'}
+                  onMouseOut={e => e.target.style.textDecoration = 'none'}
                 >
-                  Sign Up
-                </a>
-              </p>
+                  Sign up
+                </button>
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right side - Image */}
+      {/* Right side - Image placeholder */}
       <div style={{ 
         width: '50%', 
-        backgroundColor: '#4ade80',
+        backgroundColor: '#f0fdf4',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: '40px'
       }}>
-       <img
-  src={farmer}
-  alt="Happy Farmer"
-  style={{
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    borderRadius: '16px',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-  }}
-/>
+        <div style={{ 
+          textAlign: 'center',
+          maxWidth: '500px'
+        }}>
+          {/* Farmer illustration placeholder */}
+          <div style={{
+            width: '300px',
+            height: '300px',
+            backgroundColor: '#dcfce7',
+            borderRadius: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 30px auto',
+            fontSize: '48px'
+          }}>
+            🚜👨‍🌾
+          </div>
+          <h2 style={{
+            fontSize: '32px',
+            fontWeight: 'bold',
+            color: '#16a34a',
+            marginBottom: '16px'
+          }}>
+            Welcome Back!
+          </h2>
+          <p style={{
+            fontSize: '18px',
+            color: '#4b5563',
+            lineHeight: '1.6'
+          }}>
+            Sign in to access your farming dashboard and manage your agricultural operations with ease.
+          </p>
+        </div>
       </div>
     </div>
   );

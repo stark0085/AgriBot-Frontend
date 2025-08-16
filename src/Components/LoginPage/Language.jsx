@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LanguageGridSelector = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const navigate = useNavigate();
 
   const languages = [
     { code: 'mai', name: 'Maithili', label: 'मैथिली' },
@@ -157,9 +159,9 @@ const LanguageGridSelector = () => {
               cursor: 'pointer',
               transition: 'background-color 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#15803d'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#16a34a'}
-            onClick={() => console.log('Continuing with:', selectedLanguage)}
+            onMouseEnter={e => e.target.style.backgroundColor = '#15803d'}
+            onMouseLeave={e => e.target.style.backgroundColor = '#16a34a'}
+            onClick={() => navigate('/login')} // Redirect to login page
           >
             Continue
           </button>

@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
+// Components/LoginPage/signup.js
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import happyfarmer from '../../Assets/farmer_family.png';
+import { ProfileContext } from '../Contexts/ProfileProvider';
 
 const SignUpForm = () => {
+  const { signup } = useContext(ProfileContext);
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     state: '',
     district: '',
-    password: '',
+    password: '', 
     confirmPassword: ''
   });
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,10 +28,77 @@ const SignUpForm = () => {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    
+    if (!formData.state.trim()) {
+      newErrors.state = 'State is required';
+    }
+    
+    if (!formData.district.trim()) {
+      newErrors.district = 'District is required';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    return newErrors;
+  };
+
+  const handleSubmit = async () => {
+    const formErrors = validateForm();
+    
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const result = await signup(formData);
+      
+      if (result.success) {
+        // Redirect to login page after successful signup
+        alert('Account created successfully! Please login to continue.');
+        navigate('/login');
+      } else {
+        setErrors({ submit: result.error || 'Signup failed. Please try again.' });
+      }
+    } catch {
+      setErrors({ submit: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -32,25 +106,39 @@ const SignUpForm = () => {
       {/* Left side - Form */}
       <div style={{ 
         width: '50%', 
-        padding: '60px 80px', 
+        padding: '30px 80px', 
         backgroundColor: 'white',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        overflowY: 'auto'
       }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
           <h1 style={{ 
             fontSize: '48px', 
             fontWeight: 'bold', 
             color: '#000', 
-            marginBottom: '60px',
+            marginBottom: '20px',
             margin: '0 0 60px 0'
           }}>
             Sign Up
           </h1>
           
+          {errors.submit && (
+            <div style={{
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              marginBottom: '24px',
+              fontSize: '14px'
+            }}>
+              {errors.submit}
+            </div>
+          )}
+          
           <div>
             {/* Full Name */}
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '18px' }}>
               <label style={{ 
                 display: 'block', 
                 fontSize: '18px', 
@@ -67,20 +155,27 @@ const SignUpForm = () => {
                 onChange={handleInputChange}
                 placeholder="Enter your full name"
                 style={{
-                  width: '90%',
+                  width: '100%',
+                  maxWidth: '360px',
                   height: '56px',
                   padding: '0 16px',
-                  border: '2px solid #d1d5db',
+                  border: `2px solid ${errors.fullName ? '#ef4444' : '#d1d5db'}`,
                   borderRadius: '12px',
                   fontSize: '16px',
                   outline: 'none',
-                  backgroundColor: '#fff'
+                  backgroundColor: '#fff',
+                  boxSizing: 'border-box'
                 }}
               />
+              {errors.fullName && (
+                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                  {errors.fullName}
+                </p>
+              )}
             </div>
 
             {/* Email Address */}
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '18px' }}>
               <label style={{ 
                 display: 'block', 
                 fontSize: '18px', 
@@ -97,20 +192,27 @@ const SignUpForm = () => {
                 onChange={handleInputChange}
                 placeholder="Enter your email address"
                 style={{
-                  width: '90%',
+                  width: '100%',
+                  maxWidth: '360px',
                   height: '56px',
                   padding: '0 16px',
-                  border: '2px solid #d1d5db',
+                  border: `2px solid ${errors.email ? '#ef4444' : '#d1d5db'}`,
                   borderRadius: '12px',
                   fontSize: '16px',
                   outline: 'none',
-                  backgroundColor: '#fff'
+                  backgroundColor: '#fff',
+                  boxSizing: 'border-box'
                 }}
               />
+              {errors.email && (
+                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             {/* State */}
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '18px' }}>
               <label style={{ 
                 display: 'block', 
                 fontSize: '18px', 
@@ -127,20 +229,27 @@ const SignUpForm = () => {
                 onChange={handleInputChange}
                 placeholder="Enter your state"
                 style={{
-                  width: '90%',
+                  width: '100%',
+                  maxWidth: '360px',
                   height: '56px',
                   padding: '0 16px',
-                  border: '2px solid #d1d5db',
+                  border: `2px solid ${errors.state ? '#ef4444' : '#d1d5db'}`,
                   borderRadius: '12px',
                   fontSize: '16px',
                   outline: 'none',
-                  backgroundColor: '#fff'
+                  backgroundColor: '#fff',
+                  boxSizing: 'border-box'
                 }}
               />
+              {errors.state && (
+                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                  {errors.state}
+                </p>
+              )}
             </div>
 
             {/* District */}
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '18px' }}>
               <label style={{ 
                 display: 'block', 
                 fontSize: '18px', 
@@ -157,20 +266,27 @@ const SignUpForm = () => {
                 onChange={handleInputChange}
                 placeholder="Enter your district"
                 style={{
-                  width: '90%',
+                  width: '100%',
+                  maxWidth: '360px',
                   height: '56px',
                   padding: '0 16px',
-                  border: '2px solid #d1d5db',
+                  border: `2px solid ${errors.district ? '#ef4444' : '#d1d5db'}`,
                   borderRadius: '12px',
                   fontSize: '16px',
                   outline: 'none',
-                  backgroundColor: '#fff'
+                  backgroundColor: '#fff',
+                  boxSizing: 'border-box'
                 }}
               />
+              {errors.district && (
+                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                  {errors.district}
+                </p>
+              )}
             </div>
 
             {/* Password */}
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '18px' }}>
               <label style={{ 
                 display: 'block', 
                 fontSize: '18px', 
@@ -180,7 +296,7 @@ const SignUpForm = () => {
               }}>
                 Password <span style={{ color: '#ef4444' }}>*</span>
               </label>
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', maxWidth: '360px' }}>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -188,14 +304,15 @@ const SignUpForm = () => {
                   onChange={handleInputChange}
                   placeholder="Create a strong password"
                   style={{
-                    width: '80%',
+                    width: '100%',
                     height: '56px',
                     padding: '0 56px 0 16px',
-                    border: '2px solid #d1d5db',
+                    border: `2px solid ${errors.password ? '#ef4444' : '#d1d5db'}`,
                     borderRadius: '12px',
                     fontSize: '16px',
                     outline: 'none',
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
+                    boxSizing: 'border-box'
                   }}
                 />
                 <button
@@ -210,12 +327,20 @@ const SignUpForm = () => {
                     background: 'none',
                     cursor: 'pointer',
                     color: '#9ca3af',
-                    padding: '4px'
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password && (
+                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                  {errors.password}
+                </p>
+              )}
             </div>
 
             {/* Confirm Password */}
@@ -229,7 +354,7 @@ const SignUpForm = () => {
               }}>
                 Confirm Password <span style={{ color: '#ef4444' }}>*</span>
               </label>
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', maxWidth: '360px' }}>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
@@ -237,14 +362,15 @@ const SignUpForm = () => {
                   onChange={handleInputChange}
                   placeholder="Confirm your password"
                   style={{
-                    width: '80%',
+                    width: '100%',
                     height: '56px',
                     padding: '0 56px 0 16px',
-                    border: '2px solid #d1d5db',
+                    border: `2px solid ${errors.confirmPassword ? '#ef4444' : '#d1d5db'}`,
                     borderRadius: '12px',
                     fontSize: '16px',
                     outline: 'none',
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
+                    boxSizing: 'border-box'
                   }}
                 />
                 <button
@@ -258,35 +384,72 @@ const SignUpForm = () => {
                     border: 'none',
                     background: 'none',
                     cursor: 'pointer',
-                    color: '#9daf9cff',
-                    padding: '4px'
+                    color: '#9ca3af',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.confirmPassword && (
+                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                  {errors.confirmPassword}
+                </p>
+              )}
             </div>
 
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
+              disabled={isSubmitting}
               style={{
                 width: '100%',
+                maxWidth: '360px',
                 height: '56px',
-                backgroundColor: '#25eb5aff',
+                backgroundColor: isSubmitting ? '#9ca3af' : '#25eb5a',
                 color: 'white',
                 fontSize: '18px',
                 fontWeight: '600',
                 border: 'none',
                 borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                transition: 'background-color 0.2s',
+                marginBottom: '24px'
               }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
-              onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
             >
-              Sign Up
+              {isSubmitting ? 'Creating Account...' : 'Sign Up'}
             </button>
+
+            {/* Already have an account */}
+            <div style={{ textAlign: 'center', maxWidth: '360px' }}>
+              <p style={{ 
+                fontSize: '16px', 
+                color: '#6b7280',
+                margin: '0'
+              }}>
+                Already have an account?{' '}
+                <button
+                  onClick={() => navigate('/login')}
+                  style={{ 
+                    color: '#2563eb',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontSize: '16px'
+                  }}
+                  onMouseOver={e => e.target.style.textDecoration = 'underline'}
+                  onMouseOut={e => e.target.style.textDecoration = 'none'}
+                >
+                  Login
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -297,19 +460,29 @@ const SignUpForm = () => {
         backgroundColor: '#4ade80',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: '20px'
       }}>
-       <img
-  src={happyfarmer}
-  alt="Happy Farmer"
-  style={{
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover', // or 'contain' if you want the whole image visible
-    borderRadius: '16px',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-  }}
-/>
+        <div style={{
+          width: '80%',
+          height: '80%',
+          backgroundColor: 'rgba(255,255,255,0.1)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+        }}>
+          🌾 Happy Farmer Image
+          <br />
+          <span style={{ fontSize: '16px', fontWeight: 'normal' }}>
+            (Replace with your image)
+          </span>
+        </div>
       </div>
     </div>
   );
