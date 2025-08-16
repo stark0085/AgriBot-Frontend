@@ -1,41 +1,31 @@
-// Context/ProfileProvider.js
-import { createContext, useState, useEffect, memo } from "react";
+// Components/Contexts/ProfileProvider.js
+import React, { createContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
-const ProfileContext = createContext();
+export const ProfileContext = createContext();
 
-const ProfileProvider = memo(({ children }) => {
+const ProfileProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState({
-    email: '',
-    district: '',
-    state: '',
-    fullName: '',
-  });
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on app load
+  // Check if user is logged in on app start
   useEffect(() => {
     const checkAuthStatus = () => {
       try {
-        const storedUserData = localStorage.getItem("userData");
-        const authToken = localStorage.getItem("authToken");
-        
-        if (storedUserData && authToken) {
-          const parsedUserData = JSON.parse(storedUserData);
-          setUserData(parsedUserData);
+        const token = localStorage.getItem('authToken');
+        const userData = localStorage.getItem('userData');
+
+        if (token && userData) {
+          const parsedUserData = JSON.parse(userData);
+          setUser(parsedUserData);
           setIsLoggedIn(true);
-        } else {
-          // Clear any incomplete data
-          localStorage.removeItem("userData");
-          localStorage.removeItem("authToken");
-          setIsLoggedIn(false);
         }
       } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
+        console.error('Error checking auth status:', error);
         // Clear corrupted data
-        localStorage.removeItem("userData");
-        localStorage.removeItem("authToken");
-        setIsLoggedIn(false);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
       } finally {
         setLoading(false);
       }
@@ -44,101 +34,117 @@ const ProfileProvider = memo(({ children }) => {
     checkAuthStatus();
   }, []);
 
-  // Sign up function - DOES NOT auto-login the user
-  const signup = (userInfo) => {
+  // Login function
+  // Updated login function in ProfileProvider.js
+  const login = async (credentials) => {
     try {
-      // Validate passwords match
-      if (userInfo.password !== userInfo.confirmPassword) {
-        throw new Error("Passwords do not match");
-      }
+      const response = await fetch('http://localhost:3000/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-      // Here you would typically send data to your backend
-      // For now, we'll simulate successful signup without logging in
-      console.log("User registered successfully:", userInfo.email);
-      
-      // DO NOT set isLoggedIn to true or store auth data
-      // User needs to login separately after signup
-      
-      return { success: true };
+      const data = await response.json();
+
+      if (data.code === 0) {
+        // Success - store user data and token
+        const userData = {
+          email: credentials.email,
+          // Add other user data from response if available
+          ...(data.user || data.data || {}) // Handle both data.user and data.data
+        };
+
+        setUser(userData);
+        setIsLoggedIn(true);
+
+        // Store in localStorage for persistence
+        localStorage.setItem('authToken', data.token || 'logged_in');
+        localStorage.setItem('userData', JSON.stringify(userData));
+
+        return { code: 0, message: 'Login successful' };
+      } else {
+        // Error case
+        return {
+          code: 1,
+          message: data.message || 'Login failed. Please check your credentials.'
+        };
+      }
     } catch (error) {
-      console.error("Error during signup:", error);
-      return { success: false, error: error.message };
+      console.error('Login error:', error);
+      return {
+        code: 1,
+        message: 'Network error. Please check your connection and try again.'
+      };
     }
   };
-
-  // Login function
-  const login = (loginData) => {
+  // Signup function
+  const signup = async (userData) => {
     try {
-      // Here you would typically validate credentials with your backend
-      // For demo purposes, we'll accept any valid email/password
-      
-      // Create user profile (in real app, this would come from backend)
-      const userToLogin = {
-        email: loginData.email,
-        fullName: loginData.email.split('@')[0], // Use email prefix as name
-        district: 'Demo District',
-        state: 'Demo State'
-      };
+      const response = await fetch('http://localhost:3000/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
 
-      setUserData(userToLogin);
-      setIsLoggedIn(true);
-      
-      localStorage.setItem("userData", JSON.stringify(userToLogin));
-      localStorage.setItem("authToken", 'login-auth-token-' + Date.now());
-      
-      return { success: true };
+      const data = await response.json();
+
+      if (data.code === 0) {
+        // Success
+        return { code: 0, message: 'Account created successfully' };
+      } else {
+        // Error case
+        return {
+          code: 1,
+          message: data.message || 'Signup failed. Please try again.'
+        };
+      }
     } catch (error) {
-      console.error("Error during login:", error);
-      return { success: false, error: error.message };
+      console.error('Signup error:', error);
+      return {
+        code: 1,
+        message: 'Network error. Please check your connection and try again.'
+      };
     }
   };
 
   // Logout function
   const logout = () => {
-    setUserData({
-      email: '',
-      district: '',
-      state: '',
-      fullName: ''
-    });
+    setUser(null);
     setIsLoggedIn(false);
-    localStorage.removeItem("userData");
-    localStorage.removeItem("authToken");
+
+    // Clear localStorage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+
+    toast.success('Logged out successfully');
   };
 
-  // Update profile function
+  // Update user profile
   const updateProfile = (updatedData) => {
-    try {
-      const newUserData = { ...userData, ...updatedData };
-      setUserData(newUserData);
-      localStorage.setItem("userData", JSON.stringify(newUserData));
-      return { success: true };
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      return { success: false, error: error.message };
-    }
+    const newUserData = { ...user, ...updatedData };
+    setUser(newUserData);
+    localStorage.setItem('userData', JSON.stringify(newUserData));
   };
 
-  const contextValue = {
-    userData,
-    setUserData,
+  const value = {
+    user,
     isLoggedIn,
-    setIsLoggedIn,
     loading,
-    signup,
     login,
+    signup,
     logout,
     updateProfile
   };
 
   return (
-    <ProfileContext.Provider value={contextValue}>
+    <ProfileContext.Provider value={value}>
       {children}
     </ProfileContext.Provider>
   );
-});
-
-ProfileProvider.displayName = 'ProfileProvider';
+};
 
 export default ProfileProvider;
-export { ProfileContext };

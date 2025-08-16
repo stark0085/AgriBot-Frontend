@@ -3,6 +3,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
+import toast from 'react-hot-toast';
 
 // List of Indian states for the dropdown
 const indianStates = [
@@ -30,7 +31,7 @@ const SignUpForm = () => {
   
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  // Removed unused showConfirmPassword state
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
@@ -96,16 +97,22 @@ const SignUpForm = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await signup(formData);
+      const result = await signup({
+        email: formData.email,
+        password: formData.password,
+        state: formData.state,
+        district: formData.district
+      });
       
-      if (result.success) {
-        // Redirect to login page after successful signup
-        alert('Account created successfully! Please login to continue.');
+      if (result.code === 0) {
+        toast.success('Account created successfully! Please login to continue.');
         navigate('/login');
       } else {
-        setErrors({ submit: result.error || 'Signup failed. Please try again.' });
+        toast.error(result.message || 'Signup failed. Please try again.');
+        setErrors({ submit: result.message || 'Signup failed. Please try again.' });
       }
     } catch {
+      toast.error('An unexpected error occurred. Please try again.');
       setErrors({ submit: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -121,6 +128,7 @@ const SignUpForm = () => {
         backgroundColor: 'white',
         display: 'flex',
         flexDirection: 'column',
+        justifyContent: 'center',
         overflowY: 'auto'
       }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
@@ -128,7 +136,6 @@ const SignUpForm = () => {
             fontSize: '48px', 
             fontWeight: 'bold', 
             color: '#000', 
-            marginBottom: '20px',
             margin: '0 0 60px 0'
           }}>
             Sign Up
@@ -233,12 +240,10 @@ const SignUpForm = () => {
               }}>
                 State <span style={{ color: '#ef4444' }}>*</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="state"
                 value={formData.state}
                 onChange={handleInputChange}
-                placeholder="Enter your state"
                 style={{
                   width: '100%',
                   maxWidth: '360px',
@@ -249,9 +254,15 @@ const SignUpForm = () => {
                   fontSize: '16px',
                   outline: 'none',
                   backgroundColor: '#fff',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  cursor: 'pointer'
                 }}
-              />
+              >
+                <option value="">Select State</option>
+                {indianStates.map(state => (
+                  <option key={state} value={state}>{state}</option>
+                ))}
+              </select>
               {errors.state && (
                 <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
                   {errors.state}
@@ -309,11 +320,11 @@ const SignUpForm = () => {
               </label>
               <div style={{ position: 'relative', maxWidth: '360px' }}>
                 <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="Enter your full name"
+                  placeholder="Enter your password"
                   style={{
                     width: '100%',
                     height: '56px',
@@ -367,11 +378,11 @@ const SignUpForm = () => {
               </label>
               <div style={{ position: 'relative', maxWidth: '360px' }}>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  placeholder="Enter your email address"
+                  placeholder="Confirm your password"
                   style={{
                     width: '100%',
                     height: '56px',
@@ -384,28 +395,9 @@ const SignUpForm = () => {
                     boxSizing: 'border-box'
                   }}
                 />
-                {errors.email && (
-                  <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px', margin: '4px 0 0 0' }}>
-                    {errors.email}
-                  </p>
-                )}
-              </div>
-
-              {/* State */}
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '16px', 
-                  fontWeight: '600', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  State <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <select
-                  name="state"
-                  value={formData.state}
-                  onChange={handleInputChange}
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   style={{
                     position: 'absolute',
                     right: '16px',
@@ -421,16 +413,8 @@ const SignUpForm = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  <option value="">Select State</option>
-                  {indianStates.map(state => (
-                    <option key={state} value={state}>{state}</option>
-                  ))}
-                </select>
-                {errors.state && (
-                  <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px', margin: '4px 0 0 0' }}>
-                    {errors.state}
-                  </p>
-                )}
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
               {errors.confirmPassword && (
                 <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>

@@ -3,6 +3,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
+import toast from 'react-hot-toast';
 
 const LoginForm = () => {
   const { login } = useContext(ProfileContext);
@@ -60,16 +61,29 @@ const LoginForm = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await login(formData);
+      // Use the context login function instead of direct fetch
+      const result = await login({
+        email: formData.email,
+        password: formData.password
+      });
       
-      if (result.success) {
-        // Redirect to dashboard on successful login
+      if (result.code === 0) {
+        // Success - context already handled localStorage and state
+        toast.success('Login successful! Welcome back.');
+        
+        // Navigate to dashboard
         navigate('/dashboard');
       } else {
-        setErrors({ submit: result.error || 'Login failed. Please try again.' });
+        // Error
+        const errorMessage = result.message || 'Login failed. Please try again.';
+        toast.error(errorMessage);
+        setErrors({ submit: errorMessage });
       }
-    } catch {
-      setErrors({ submit: 'An unexpected error occurred. Please try again.' });
+    } catch (error) {
+      console.error('Login error:', error);
+      const errorMessage = 'An unexpected error occurred. Please try again.';
+      toast.error(errorMessage);
+      setErrors({ submit: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
@@ -241,7 +255,9 @@ const LoginForm = () => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  alert('Forgot password functionality would be implemented here');
+                  toast('Forgot password functionality coming soon!', {
+                    icon: '💡'
+                  });
                 }}
                 style={{
                   color: '#3b82f6',
