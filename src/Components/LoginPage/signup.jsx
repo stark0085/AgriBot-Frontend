@@ -4,6 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 
+// List of Indian states for the dropdown
+const indianStates = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
+  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
+  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
+
 const SignUpForm = () => {
   const { signup } = useContext(ProfileContext);
   const navigate = useNavigate();
@@ -17,9 +28,9 @@ const SignUpForm = () => {
     confirmPassword: ''
   });
   
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  // Removed unused showConfirmPassword state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
@@ -298,11 +309,11 @@ const SignUpForm = () => {
               </label>
               <div style={{ position: 'relative', maxWidth: '360px' }}>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleInputChange}
-                  placeholder="Create a strong password"
+                  placeholder="Enter your full name"
                   style={{
                     width: '100%',
                     height: '56px',
@@ -356,11 +367,11 @@ const SignUpForm = () => {
               </label>
               <div style={{ position: 'relative', maxWidth: '360px' }}>
                 <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Confirm your password"
+                  placeholder="Enter your email address"
                   style={{
                     width: '100%',
                     height: '56px',
@@ -373,9 +384,28 @@ const SignUpForm = () => {
                     boxSizing: 'border-box'
                   }}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                {errors.email && (
+                  <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px', margin: '4px 0 0 0' }}>
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* State */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '16px', 
+                  fontWeight: '600', 
+                  color: '#374151', 
+                  marginBottom: '8px' 
+                }}>
+                  State <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleInputChange}
                   style={{
                     position: 'absolute',
                     right: '16px',
@@ -391,8 +421,16 @@ const SignUpForm = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+                  <option value="">Select State</option>
+                  {indianStates.map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+                {errors.state && (
+                  <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px', margin: '4px 0 0 0' }}>
+                    {errors.state}
+                  </p>
+                )}
               </div>
               {errors.confirmPassword && (
                 <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
