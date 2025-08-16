@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import treeWithRoots from '../../Assets/Tree-with-roots.png';
+import treeWithRoots from '../../assets/Tree-with-roots.png';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({

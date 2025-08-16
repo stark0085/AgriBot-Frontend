@@ -4,15 +4,16 @@ import Chats from './Components/ChatPage/Chats'
 import Dashboard from './Components/Dashboard/Dashboard'
 import './index.css'
 import SignUp from './Components/LoginPage/signup'
+import ProfilePage from './Components/Profile/Profile';
 
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-    <Dashboard></Dashboard>
-    {/* <Chats></Chats> */}
+      {/* <Dashboard></Dashboard> */}
+      {/* <Chats></Chats> */}
+      {/* <SignUp></SignUp>  */}
+      <ProfilePage></ProfilePage>
     </>
   )
 }
