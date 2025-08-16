@@ -3,7 +3,9 @@ import './App.css'
 import Chats from './Components/ChatPage/Chats'
 import Dashboard from './Components/Dashboard/Dashboard'
 import './index.css'
-import SignUp from './Components/LoginPage/signup'
+import SignUp from './Components/LoginPage/SignUp'
+import Language from './Components/LoginPage/language';
+import LoginForm from './Components/LoginPage/login';
 
 
 function App() {
@@ -11,8 +13,11 @@ function App() {
 
   return (
     <>
-    <Dashboard></Dashboard>
+     {/* <Dashboard></Dashboard> */}
     {/* <Chats></Chats> */}
+    {/* <SignUp></SignUp> */}
+    <Language></Language>
+    {/* <LoginForm></LoginForm> */}
     </>
   )
 }
