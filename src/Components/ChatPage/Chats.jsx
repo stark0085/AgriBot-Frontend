@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Send, User, MessageCircle, Clock, Settings, HelpCircle, X, Loader } from 'lucide-react';
 
 export default function Chats() {
@@ -10,6 +11,14 @@ export default function Chats() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  /**
+   * FIX: Added a ref to prevent the initial message from being processed twice
+   * in React.StrictMode (development mode).
+   */
+  const initialMessageProcessed = useRef(false);
 
   // Scroll to bottom when new messages are added
   const scrollToBottom = () => {
@@ -20,37 +29,45 @@ export default function Chats() {
     scrollToBottom();
   }, [messages]);
 
+  /**
+   * MODIFIED: This effect now checks the ref flag before processing the message.
+   */
+  useEffect(() => {
+    const initialMessage = location.state?.initialMessage;
+    // Check if there's a message AND it has not been processed yet.
+    if (initialMessage && !initialMessageProcessed.current) {
+      // Set the flag to true immediately to prevent re-processing.
+      initialMessageProcessed.current = true;
+      
+      // Process the message.
+      processUserMessage(initialMessage);
+      
+      // Clear the location state.
+      navigate('.', { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array ensures this runs only on mount
+
   // API call to send message to bot
   const sendMessageToAPI = async (userMessage) => {
     try {
-      // Replace this URL with your actual API endpoint
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          conversation_id: 'chat_' + Date.now(), // You can implement proper session management
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response from API');
-      }
-
+      if (!response.ok) throw new Error('API response was not ok');
       const data = await response.json();
-      return data.response || data.message || "I'm sorry, I couldn't process your request.";
+      return data.response || "Sorry, I couldn't process that.";
     } catch (error) {
       console.error('API Error:', error);
-      // Fallback response when API fails
-      return generateFallbackResponse(userMessage);
+      return generateFallbackResponse(userMessage); // Use fallback on error
     }
   };
 
-  // Fallback response generator (for demo purposes when API is not available)
+  // Fallback response generator
   const generateFallbackResponse = (userMessage) => {
-    const responses = [
+      const responses = [
       "That's interesting! Could you tell me more about that?",
       "I understand. How can I help you with this?",
       "Thanks for sharing that. What would you like to know?",
@@ -79,49 +96,46 @@ export default function Chats() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (inputMessage.trim() && !isLoading) {
-      const userMessage = inputMessage.trim();
-      
-      // Add user message immediately
-      const newUserMessage = {
-        id: Date.now(),
-        text: userMessage,
-        isBot: false,
+  const processUserMessage = async (userMessage) => {
+    setIsLoading(true);
+    // Add user message to the UI
+    const newUserMessage = {
+      id: Date.now(),
+      text: userMessage,
+      isBot: false,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, newUserMessage]);
+
+    // Get and add bot response
+    try {
+      const botResponse = await sendMessageToAPI(userMessage);
+      const newBotMessage = {
+        id: Date.now() + 1,
+        text: botResponse,
+        isBot: true,
         timestamp: new Date()
       };
-      
-      setMessages(prev => [...prev, newUserMessage]);
+      setMessages(prev => [...prev, newBotMessage]);
+    } catch (error) {
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: "I'm having trouble connecting. Please try again later.",
+        isBot: true,
+        timestamp: new Date(),
+        isError: true
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleSendMessage = () => {
+    const messageToSend = inputMessage.trim();
+    if (messageToSend && !isLoading) {
+      processUserMessage(messageToSend);
       setInputMessage('');
-      setIsLoading(true);
-
-      try {
-        // Get bot response from API
-        const botResponse = await sendMessageToAPI(userMessage);
-        
-        // Add bot response
-        const newBotMessage = {
-          id: Date.now() + 1,
-          text: botResponse,
-          isBot: true,
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, newBotMessage]);
-      } catch (error) {
-        console.error('Error sending message:', error);
-        // Add error message
-        const errorMessage = {
-          id: Date.now() + 1,
-          text: "I'm sorry, I'm having trouble connecting right now. Please try again.",
-          isBot: true,
-          timestamp: new Date(),
-          isError: true
-        };
-        setMessages(prev => [...prev, errorMessage]);
-      } finally {
-        setIsLoading(false);
-      }
     }
   };
 
@@ -139,6 +153,8 @@ export default function Chats() {
       hour12: true 
     });
   };
+  
+  // --- The rest of your component's JSX and styles remain the same ---
 
   const sidebarStyle = {
     width: isSidebarOpen ? '280px' : '0px',
@@ -178,7 +194,6 @@ export default function Chats() {
     backgroundColor: '#1e293b',
     padding: '20px'
   };
-
   return (
     <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f1f5f9', fontFamily: 'system-ui, sans-serif' }}>
       {/* Sidebar */}

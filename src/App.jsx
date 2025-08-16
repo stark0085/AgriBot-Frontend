@@ -1,6 +1,8 @@
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
 import ProfileProvider from './Components/Contexts/ProfileProvider';
 import { ProtectedRoute, PublicRoute } from './Components/Contexts/ProtectedRoute';
 import './App.css';
@@ -19,6 +21,7 @@ function App() {
     <ProfileProvider>
       <Router>
         <div className="App">
+          <Toaster />
           <Routes>
             {/* Public Route - Language Selection (always accessible) */}
             <Route path="/" element={<LanguageGridSelector />} />
@@ -52,7 +55,7 @@ function App() {
               } 
             />
             <Route 
-              path="/chats" 
+              path="/chat" 
               element={
                 <ProtectedRoute>
                   <Chats />

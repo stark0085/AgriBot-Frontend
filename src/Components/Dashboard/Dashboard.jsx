@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Send, Menu, X, Cloud, Sun, CloudRain, Thermometer, Droplets, Wind, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import placards_bcg from '../../assets/placards_bcg.jpeg';
 import rupee from '../../assets/rupee.png';
 import weather from '../../assets/weather.png';
@@ -8,7 +9,7 @@ import cropsbcg from '../../assets/cropsbcg.png';
 export default function Dashboard() {
   const [message, setMessage] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [ setCurrentSchemeIndex] = useState(0);
+  const [setCurrentSchemeIndex] = useState(0);
   const [weatherData, setWeatherData] = useState(null);
   const [hourlyData, setHourlyData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,7 +17,9 @@ export default function Dashboard() {
   const [showCalculatorModal, setShowCalculatorModal] = useState(false);
   const [showWeatherModal, setShowWeatherModal] = useState(false);
   const [showMoreExamples, setShowMoreExamples] = useState(false);
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
+  // ... (all other existing functions and state remain the same)
   // Agricultural schemes data
   const agriculturalSchemes = [
     {
@@ -39,7 +42,7 @@ export default function Dashboard() {
       setCurrentSchemeIndex((prev) => (prev + 1) % agriculturalSchemes.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [agriculturalSchemes.length]);
+  }, [agriculturalSchemes.length, setCurrentSchemeIndex]);
 
   // Fetch weather data
   useEffect(() => {
@@ -95,13 +98,28 @@ export default function Dashboard() {
 
     fetchWeatherData();
   }, []);
-
+  
+  /**
+   * MODIFIED: Navigates to the chat page with the message.
+   */
   const handleSendMessage = () => {
     if (message.trim()) {
-      console.log('Redirecting with message:', message);
-      setMessage('');
+      // Navigate to /chat and pass the message in the location state
+      navigate('/chat', { state: { initialMessage: message.trim() } });
+      setMessage(''); // Clear the input field
     }
   };
+
+  /**
+   * MODIFIED: Navigates to the chat page with the selected question.
+   */
+  const handleQuestionClick = (question) => {
+    // Directly navigate to the chat page with the question
+    navigate('/chat', { state: { initialMessage: question } });
+  };
+  
+  // --- No other changes are needed below this line in Dashboard.js ---
+  // The rest of your JSX and style objects remain the same.
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -117,15 +135,6 @@ export default function Dashboard() {
 
   const handleKrishiRakshakClick = () => {
     window.open('https://pmfby.gov.in/krph/', '_blank', 'noopener,noreferrer');
-  };
-
-  const handleQuestionClick = (question) => {
-    // For now, just set the message in the input field
-    // You can modify this to redirect to /chat page with the question as a parameter
-    setMessage(question);
-    // Alternatively, you could redirect:
-    // const encodedQuestion = encodeURIComponent(question);
-    // window.location.href = `/chat?question=${encodedQuestion}`;
   };
 
   const getWeatherIcon = (code) => {
@@ -261,7 +270,7 @@ export default function Dashboard() {
     mainContent: {
       flex: 1,
       padding: '32px',
-      marginTop: '20px',
+      marginTop: '5px',
       paddingBottom: '120px',
       backgroundImage: `url(${placards_bcg})`,
       backgroundRepeat: 'no-repeat',      // Prevents repeating in both directions
@@ -645,12 +654,17 @@ export default function Dashboard() {
                 </button>
               </div>
               <nav>
-                {['💬 Chat History', '⚙️ Settings', '👤 Profile', '❓ Help & Support'].map((item, index) => (
+                {['💬 Chat History', '⚙️ Settings', '👤 Profile'].map((item, index) => (
                   <div
                     key={index}
                     style={styles.menuItem}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f9ff'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    onMouseEnter={e => e.target.style.backgroundColor = '#f0f9ff'}
+                    onMouseLeave={e => e.target.style.backgroundColor = 'transparent'}
+                    onClick={() => {
+                      if (item.includes('Profile')) {
+                        navigate('/profile'); // Redirect to /profile
+                      }
+                    }}
                   >
                     {item}
                   </div>
