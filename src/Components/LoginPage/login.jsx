@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import toast from 'react-hot-toast';
+import yourImage from '../../assets/farmer_3_member.png'; // Adjust the path to your image
 
 const LoginForm = () => {
   const { login } = useContext(ProfileContext);
@@ -99,22 +100,31 @@ const LoginForm = () => {
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       {/* Left side - Form */}
       <div style={{ 
-        width: '50%', 
-        padding: '60px 80px', 
-        backgroundColor: 'white',
+        width: '30%', 
+        padding: '80px 200px', 
+        background:'linear-gradient(225deg, #fdfefe 0%, #e1f9ec 100%)',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        
       }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
           <h1 style={{ 
             fontSize: '48px', 
             fontWeight: 'bold', 
             color: '#000', 
-            marginBottom: '60px',
-            margin: '0 0 60px 0'
+           
           }}>
-            Login
+            Welcome back
+          </h1>
+         <h1 style={{ 
+            fontSize: '18px', 
+            fontWeight: 'normal', 
+            color: '#000000ff', 
+            marginBottom: '60px',
+          
+          }}>
+            Please enter your details
           </h1>
           
           {errors.submit && (
@@ -333,14 +343,23 @@ const LoginForm = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px'
+        padding: '40px',
+        backgroundImage: `url(${yourImage})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  // borderRadius: '20px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  // margin: '0 auto 30px auto',
       }}>
         <div style={{ 
           textAlign: 'center',
           maxWidth: '500px'
         }}>
           {/* Farmer illustration placeholder */}
-          <div style={{
+          {/* <div style={{
             width: '300px',
             height: '300px',
             backgroundColor: '#dcfce7',
@@ -349,11 +368,12 @@ const LoginForm = () => {
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 30px auto',
-            fontSize: '48px'
+            fontSize: '48px',
+            width: '300px',
+            height: '300px'
           }}>
-            🚜👨‍🌾
-          </div>
-          <h2 style={{
+          </div> */}
+          {/* <h2 style={{
             fontSize: '32px',
             fontWeight: 'bold',
             color: '#16a34a',
@@ -367,7 +387,7 @@ const LoginForm = () => {
             lineHeight: '1.6'
           }}>
             Sign in to access your farming dashboard and manage your agricultural operations with ease.
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
