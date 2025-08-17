@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Send, User, MessageCircle, Clock, Settings, HelpCircle, X, Loader } from 'lucide-react';
+import { Menu, Send, User, MessageCircle, Clock, Settings, HelpCircle, X, Loader, LayoutDashboard, UserCircle, LogOut } from 'lucide-react';
+import { ProfileContext } from '../Contexts/ProfileProvider';
 
 export default function Chats() {
   const [messages, setMessages] = useState([
@@ -10,15 +11,24 @@ export default function Chats() {
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const messagesEndRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useContext(ProfileContext);
 
   /**
    * FIX: Added a ref to prevent the initial message from being processed twice
    * in React.StrictMode (development mode).
    */
   const initialMessageProcessed = useRef(false);
+
+  // Demo chat history data
+  const demoChats = [
+    { id: 1, name: "Weather Discussion", lastMessage: "Thanks for the weather info!" },
+    { id: 2, name: "Recipe Help", lastMessage: "Perfect! I'll try that recipe." },
+    { id: 3, name: "Travel Planning", lastMessage: "Those destinations sound amazing." }
+  ];
 
   // Scroll to bottom when new messages are added
   const scrollToBottom = () => {
@@ -153,6 +163,35 @@ export default function Chats() {
       hour12: true 
     });
   };
+
+  // Handle chat history click
+  const handleChatHistoryClick = (chat) => {
+    console.log(`Opening chat: ${chat.name}`);
+    // For now, just log. You can implement actual chat loading logic here
+  };
+
+  // Handle navigation
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    logout();
+    setShowLogoutModal(false);
+    navigate('/login');
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutModal(false);
+  };
   
   // --- The rest of your component's JSX and styles remain the same ---
 
@@ -199,9 +238,9 @@ export default function Chats() {
       {/* Sidebar */}
       <div style={sidebarStyle}>
         {isSidebarOpen && (
-          <div style={{ padding: '20px', height: '100%' }}>
+          <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>Dashboard</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>Chat History</h2>
               <div style={{ 
                 width: '32px', 
                 height: '32px', 
@@ -215,6 +254,7 @@ export default function Chats() {
               </div>
             </div>
             
+            {/* Current Chat Indicator */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -233,100 +273,167 @@ export default function Chats() {
                 justifyContent: 'center',
                 marginRight: '12px'
               }}>
-                <User size={16} />
+                <MessageCircle size={16} />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>AI Assistant</span>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>Current Chat</span>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button style={{ 
-                width: '100%',
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '10px 12px', 
-                backgroundColor: '#3b82f6', 
-                border: 'none',
-                borderRadius: '6px',
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}>
-                <MessageCircle size={16} style={{ marginRight: '12px' }} />
-                Chat
-              </button>
+            {/* Chat History Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '500', margin: '0 0 12px 0', opacity: '0.7' }}>Recent Chats</h3>
               
-              <button style={{ 
-                width: '100%',
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '10px 12px', 
-                backgroundColor: 'transparent', 
-                border: 'none',
-                borderRadius: '6px',
-                color: 'white',
-                fontSize: '14px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#334155'}
-              onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
-                <Clock size={16} style={{ marginRight: '12px' }} />
-                History
-              </button>
-              
-              <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button style={{ 
-                  width: '100%',
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  padding: '10px 12px', 
-                  backgroundColor: 'transparent', 
-                  border: 'none',
-                  borderRadius: '6px',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#334155'}
-                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
-                  <Settings size={16} style={{ marginRight: '12px' }} />
-                  Settings
+              {demoChats.map((chat) => (
+                <button
+                  key={chat.id}
+                  onClick={() => handleChatHistoryClick(chat)}
+                  style={{ 
+                    width: '100%',
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    padding: '12px', 
+                    backgroundColor: 'transparent', 
+                    border: '1px solid #475569',
+                    borderRadius: '8px',
+                    color: 'white',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textAlign: 'left'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#334155';
+                    e.currentTarget.style.borderColor = '#64748b';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = '#475569';
+                  }}
+                >
+                  <div style={{ fontWeight: '500', marginBottom: '4px' }}>{chat.name}</div>
+                  <div style={{ fontSize: '12px', opacity: '0.7', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                    {chat.lastMessage}
+                  </div>
                 </button>
-                
-                <button style={{ 
-                  width: '100%',
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  padding: '10px 12px', 
-                  backgroundColor: 'transparent', 
-                  border: 'none',
-                  borderRadius: '6px',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#334155'}
-                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
-                  <HelpCircle size={16} style={{ marginRight: '12px' }} />
-                  Help
-                </button>
-              </div>
+              ))}
             </div>
-
-            {/* Connection Status */}
+            
+            {/* Separator Line */}
             <div style={{ 
-              position: 'absolute', 
-              bottom: '20px', 
-              left: '20px', 
-              right: '20px',
-              padding: '8px 12px',
-              backgroundColor: isLoading ? '#f59e0b' : '#10b981',
-              borderRadius: '6px',
-              fontSize: '12px',
-              textAlign: 'center'
-            }}>
-              {isLoading ? 'AI is thinking...' : 'Connected'}
+              height: '1px', 
+              backgroundColor: '#475569', 
+              margin: '20px 0'
+            }}></div>
+            
+            {/* Navigation Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button
+                onClick={handleDashboardClick}
+                style={{ 
+                  width: '100%',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: '12px', 
+                  backgroundColor: 'transparent', 
+                  border: '1px solid #475569',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = '#334155';
+                  e.target.style.borderColor = '#64748b';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.borderColor = '#475569';
+                }}
+              >
+                <LayoutDashboard size={16} style={{ marginRight: '12px' }} />
+                Dashboard
+              </button>
+              
+              {/* Line after Dashboard button */}
+              <div style={{ 
+                height: '1px', 
+                backgroundColor: '#475569', 
+                margin: '0'
+              }}></div>
+              
+              <button
+                onClick={handleProfileClick}
+                style={{ 
+                  width: '100%',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: '12px', 
+                  backgroundColor: 'transparent', 
+                  border: '1px solid #475569',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = '#334155';
+                  e.target.style.borderColor = '#64748b';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.borderColor = '#475569';
+                }}
+              >
+                <UserCircle size={16} style={{ marginRight: '12px' }} />
+                Profile
+              </button>
+              
+              {/* Line after Profile button */}
+              <div style={{ 
+                height: '1px', 
+                backgroundColor: '#475569', 
+                margin: '0'
+              }}></div>
+
+              <button
+                onClick={handleLogoutClick}
+                style={{ 
+                  width: '100%',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: '12px', 
+                  backgroundColor: 'transparent', 
+                  border: '1px solid #dc2626',
+                  borderRadius: '8px',
+                  color: '#ef4444',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = '#dc2626';
+                  e.target.style.color = 'white';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#ef4444';
+                }}
+              >
+                <LogOut size={16} style={{ marginRight: '12px' }} />
+                Logout
+              </button>
+              
+              {/* Line after Logout button */}
+              <div style={{ 
+                height: '1px', 
+                backgroundColor: '#475569', 
+                margin: '0'
+              }}></div>
             </div>
           </div>
         )}
@@ -536,6 +643,90 @@ export default function Chats() {
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#1f2937',
+              margin: '0 0 12px 0'
+            }}>
+              Confirm Logout
+            </h3>
+            <p style={{
+              fontSize: '14px',
+              color: '#6b7280',
+              margin: '0 0 20px 0',
+              lineHeight: '1.5'
+            }}>
+              Are you sure you want to log out? You'll need to sign in again to access your account.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={handleCancelLogout}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#374151',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#e5e7eb'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+              >
+                No
+              </button>
+              <button
+                onClick={handleConfirmLogout}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#dc2626',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#dc2626'}
+              >
+                Yes, Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <style jsx>{`
         @keyframes spin {
