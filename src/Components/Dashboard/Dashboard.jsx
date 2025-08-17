@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Send, Menu, X, Cloud, Sun, CloudRain, Thermometer, Droplets, Wind, ExternalLink, Leaf, TestTube2, MessageCircle, User, Globe, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ProfileContext } from '../Contexts/ProfileProvider'; // <-- Add this import
 import placards_bcg from '../../assets/dahboardbcg.png';
 import rupee from '../../assets/rupee.png';
 import weather from '../../assets/weather.png';
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [showCropInfoModal, setShowCropInfoModal] = useState(false);
   const [showIrrigationInsightModal, setShowIrrigationInsightModal] = useState(false);
   const [showFertilizerInsightModal, setShowFertilizerInsightModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // <-- Add this state
 
   // Expanded crop info state to include soil test data
   const [cropInfo, setCropInfo] = useState({
@@ -40,6 +42,7 @@ export default function Dashboard() {
   });
 
   const navigate = useNavigate();
+  const { logout } = useContext(ProfileContext); // <-- Use real logout
 
   // Agricultural schemes data
   const agriculturalSchemes = [
@@ -178,12 +181,19 @@ export default function Dashboard() {
     setIsMenuOpen(false);
   };
 
+  // Update handleLogout to show modal
   const handleLogout = () => {
-    // Add logout logic here (clear tokens, etc.)
-    console.log('Logging out...');
-    navigate('/');
+    setShowLogoutModal(true);
     setIsMenuOpen(false);
   };
+
+  // Confirm and cancel handlers
+  const handleConfirmLogout = () => {
+    logout();
+    setShowLogoutModal(false);
+    navigate('/login');
+  };
+  const handleCancelLogout = () => setShowLogoutModal(false);
 
   const isFormComplete = cropInfo.cropType && cropInfo.cropStage && cropInfo.soilType && cropInfo.farmSize;
   
@@ -1732,6 +1742,93 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(10px)'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+            borderRadius: '20px',
+            padding: '30px',
+            maxWidth: '420px',
+            width: '90%',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <h3 style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              color: '#1f2937',
+              margin: '0 0 15px 0',
+              textAlign: 'center'
+            }}>
+              Confirm Logout
+            </h3>
+            <p style={{
+              fontSize: '15px',
+              color: '#6b7280',
+              margin: '0 0 25px 0',
+              lineHeight: '1.6',
+              textAlign: 'center'
+            }}>
+              Are you sure you want to log out? You'll need to sign in again to access your account.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={handleCancelLogout}
+                style={{
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '10px',
+                  color: '#374151',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmLogout}
+                style={{
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: 'white',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'
+                }}
+              >
+                Yes, Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes slideLeftToRight {

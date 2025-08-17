@@ -9,12 +9,12 @@ import yourImage from '../../assets/farmer_hand.png'; // Adjust the path to your
 const LoginForm = () => {
   const { login } = useContext(ProfileContext);
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +25,7 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -37,41 +37,41 @@ const LoginForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
-    
+
     return newErrors;
   };
 
   const handleSubmit = async () => {
     const formErrors = validateForm();
-    
+
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Use the context login function instead of direct fetch
       const result = await login({
         email: formData.email,
         password: formData.password
       });
-      
+
       if (result.code === 0) {
         // Success - context already handled localStorage and state
         toast.success('Login successful! Welcome back.');
-        
+
         // Navigate to dashboard
         navigate('/dashboard');
       } else {
@@ -99,34 +99,34 @@ const LoginForm = () => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       {/* Left side - Form */}
-      <div style={{ 
-        width: '30%', 
-        padding: '80px 200px', 
-        background:'linear-gradient(to top right, #ffffff 0%, #ffffff 25%, #f6fbff 50%, #e3f5ff 75%, #c9eaff 100%)',
+      <div style={{
+        width: '30%',
+        padding: '80px 200px',
+        background: 'linear-gradient(to top right, #ffffff 0%, #ffffff 25%, #f6fbff 50%, #e3f5ff 75%, #c9eaff 100%)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        
+
       }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
-          <h1 style={{ 
-            fontSize: '48px', 
-            fontWeight: 'bold', 
-            color: '#000', 
-           
+          <h1 style={{
+            fontSize: '48px',
+            fontWeight: 'bold',
+            color: '#000',
+
           }}>
             Welcome back
           </h1>
-         <h1 style={{ 
-            fontSize: '18px', 
-            fontWeight: 'normal', 
-            color: '#000000ff', 
+          <h1 style={{
+            fontSize: '18px',
+            fontWeight: 'normal',
+            color: '#000000ff',
             marginBottom: '60px',
-          
+
           }}>
             Please enter your details
           </h1>
-          
+
           {errors.submit && (
             <div style={{
               backgroundColor: '#fee2e2',
@@ -139,15 +139,15 @@ const LoginForm = () => {
               {errors.submit}
             </div>
           )}
-          
+
           <div>
             {/* Email Address */}
             <div style={{ marginBottom: '32px' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                color: '#374151', 
+              <label style={{
+                display: 'block',
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#374151',
                 marginBottom: '8px'
               }}>
                 Email Address
@@ -180,10 +180,10 @@ const LoginForm = () => {
                 placeholder="Enter your email"
               />
               {errors.email && (
-                <p style={{ 
-                  color: '#dc2626', 
-                  fontSize: '14px', 
-                  marginTop: '6px' 
+                <p style={{
+                  color: '#dc2626',
+                  fontSize: '14px',
+                  marginTop: '6px'
                 }}>
                   {errors.email}
                 </p>
@@ -192,11 +192,11 @@ const LoginForm = () => {
 
             {/* Password */}
             <div style={{ marginBottom: '32px' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                color: '#374151', 
+              <label style={{
+                display: 'block',
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#374151',
                 marginBottom: '8px'
               }}>
                 Password
@@ -249,37 +249,14 @@ const LoginForm = () => {
                 </button>
               </div>
               {errors.password && (
-                <p style={{ 
-                  color: '#dc2626', 
-                  fontSize: '14px', 
-                  marginTop: '6px' 
+                <p style={{
+                  color: '#dc2626',
+                  fontSize: '14px',
+                  marginTop: '6px'
                 }}>
                   {errors.password}
                 </p>
               )}
-            </div>
-
-            {/* Forgot Password Link */}
-            <div style={{ textAlign: 'right', marginBottom: '32px' }}>
-              <a 
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toast('Forgot password functionality coming soon!', {
-                    icon: '💡'
-                  });
-                }}
-                style={{
-                  color: '#3b82f6',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-                onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
-                onMouseOut={(e) => e.target.style.textDecoration = 'none'}
-              >
-                Forgot your password?
-              </a>
             </div>
 
             {/* Login Button */}
@@ -337,24 +314,23 @@ const LoginForm = () => {
       </div>
 
       {/* Right side - Image placeholder */}
-      <div style={{ 
-        width: '50%', 
+      <div style={{
+        width: '50%',
         backgroundColor: '#f0fdf4',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '40px',
         backgroundImage: `url(${yourImage})`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  // borderRadius: '20px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  // margin: '0 auto 30px auto',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        // margin: '0 auto 30px auto',
       }}>
-        <div style={{ 
+        <div style={{
           textAlign: 'center',
           maxWidth: '500px'
         }}>

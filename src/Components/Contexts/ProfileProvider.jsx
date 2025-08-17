@@ -1,7 +1,7 @@
-// Components/Contexts/ProfileProvider.js
 import React, { createContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
+// Create the context
 export const ProfileContext = createContext();
 
 const ProfileProvider = ({ children }) => {
@@ -9,7 +9,7 @@ const ProfileProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on app start
+  // On initial load, check local storage for user data and token
   useEffect(() => {
     const checkAuthStatus = () => {
       try {
@@ -23,7 +23,7 @@ const ProfileProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
-        // Clear corrupted data
+        // Clear potentially corrupted data
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
       } finally {
@@ -33,9 +33,9 @@ const ProfileProvider = ({ children }) => {
 
     checkAuthStatus();
   }, []);
-
-  // Login function
-  // Updated login function in ProfileProvider.js
+  
+  //  * Logs the user in by sending credentials to the backend.
+  //  * On success, it stores user data (including state and district) and the auth token.
   const login = async (credentials) => {
     try {
       const response = await fetch('http://localhost:3000/auth/signin', {
@@ -49,23 +49,22 @@ const ProfileProvider = ({ children }) => {
       const data = await response.json();
 
       if (data.code === 0) {
-        // Success - store user data and token
+        // --- KEY CHANGE IS HERE ---
+        // Create a complete user data object from the API response
         const userData = {
           email: credentials.email,
-          // Add other user data from response if available
-          ...(data.user || data.data || {}) // Handle both data.user and data.data
+          state: data.state,       // Get state from response
+          district: data.district  // Get district from response
         };
 
+        // Update state and local storage
         setUser(userData);
         setIsLoggedIn(true);
-
-        // Store in localStorage for persistence
-        localStorage.setItem('authToken', data.token || 'logged_in');
+        localStorage.setItem('authToken', data.token);
         localStorage.setItem('userData', JSON.stringify(userData));
 
         return { code: 0, message: 'Login successful' };
       } else {
-        // Error case
         return {
           code: 1,
           message: data.message || 'Login failed. Please check your credentials.'
@@ -79,7 +78,28 @@ const ProfileProvider = ({ children }) => {
       };
     }
   };
-  // Signup function
+
+  // Logs the user out by clearing state and local storage.
+  const logout = () => {
+    setUser(null);
+    setIsLoggedIn(false);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    toast.success('Logged out successfully');
+  };
+
+  /**
+   * Updates the user's profile information in state and local storage.
+   */
+  const updateProfile = (updatedData) => {
+    // Note: This is a local update. For persistence, you'd also need a backend endpoint.
+    const newUserData = { ...user, ...updatedData };
+    setUser(newUserData);
+    localStorage.setItem('userData', JSON.stringify(newUserData));
+    // Assuming the update is always successful locally
+    return { success: true };
+  };
+  
   const signup = async (userData) => {
     try {
       const response = await fetch('http://localhost:3000/auth/signup', {
@@ -89,45 +109,16 @@ const ProfileProvider = ({ children }) => {
         },
         body: JSON.stringify(userData),
       });
-
       const data = await response.json();
-
       if (data.code === 0) {
-        // Success
         return { code: 0, message: 'Account created successfully' };
       } else {
-        // Error case
-        return {
-          code: 1,
-          message: data.message || 'Signup failed. Please try again.'
-        };
+        return { code: 1, message: data.message || 'Signup failed.' };
       }
     } catch (error) {
       console.error('Signup error:', error);
-      return {
-        code: 1,
-        message: 'Network error. Please check your connection and try again.'
-      };
+      return { code: 1, message: 'Network error. Please try again.' };
     }
-  };
-
-  // Logout function
-  const logout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-
-    // Clear localStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-
-    toast.success('Logged out successfully');
-  };
-
-  // Update user profile
-  const updateProfile = (updatedData) => {
-    const newUserData = { ...user, ...updatedData };
-    setUser(newUserData);
-    localStorage.setItem('userData', JSON.stringify(newUserData));
   };
 
   const value = {
