@@ -193,16 +193,16 @@ export default function Chats() {
     setShowLogoutModal(false);
   };
   
-  // --- The rest of your component's JSX and styles remain the same ---
-
+  // Updated styles to match the second image
   const sidebarStyle = {
-    width: isSidebarOpen ? '280px' : '0px',
-    backgroundColor: '#1e293b',
+    width: isSidebarOpen ? '320px' : '0px',
+    background: 'linear-gradient(135deg, #87CEEB 0%, #6BB6FF 50%, #4A90E2 100%)',
     color: 'white',
     height: '100vh',
     transition: 'width 0.3s ease',
     overflow: 'hidden',
-    flexShrink: 0
+    flexShrink: 0,
+    boxShadow: '2px 0 20px rgba(0, 0, 0, 0.1)'
   };
 
   const mainChatStyle = {
@@ -210,47 +210,53 @@ export default function Chats() {
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
-    backgroundColor: '#334155'
+    background: 'linear-gradient(135deg, #F5E6D3 0%, #E8D5C4 100%)'
   };
 
   const headerStyle = {
-    backgroundColor: '#1e293b',
-    color: 'white',
-    padding: '16px',
+    background: 'linear-gradient(135deg, #F5E6D3 0%, #E8D5C4 100%)',
+    color: '#2C3E50',
+    padding: '20px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
   };
 
   const messagesContainerStyle = {
     flex: 1,
     overflowY: 'auto',
-    padding: '20px',
-    backgroundColor: '#475569'
+    padding: '30px',
+    background: 'linear-gradient(135deg, #F5E6D3 0%, #E8D5C4 100%)'
   };
 
   const inputContainerStyle = {
-    backgroundColor: '#1e293b',
-    padding: '20px'
+    background: 'linear-gradient(135deg, #F5E6D3 0%, #E8D5C4 100%)',
+    padding: '25px',
+    borderTop: '1px solid rgba(255, 255, 255, 0.2)'
   };
+
   return (
-    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f1f5f9', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#F5E6D3', fontFamily: 'system-ui, sans-serif' }}>
       {/* Sidebar */}
       <div style={sidebarStyle}>
         {isSidebarOpen && (
-          <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>Chat History</h2>
+          <div style={{ padding: '25px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', margin: 0, textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>Chat History</h2>
               <div style={{ 
-                width: '32px', 
-                height: '32px', 
-                backgroundColor: '#64748b', 
+                width: '40px', 
+                height: '40px', 
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)', 
                 borderRadius: '50%', 
                 display: 'flex', 
                 alignItems: 'center', 
-                justifyContent: 'center' 
+                justifyContent: 'center',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
               }}>
-                <User size={16} />
+                <User size={18} />
               </div>
             </div>
             
@@ -258,29 +264,33 @@ export default function Chats() {
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              marginBottom: '24px', 
-              backgroundColor: '#334155', 
-              padding: '12px', 
-              borderRadius: '8px' 
+              marginBottom: '30px', 
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)', 
+              padding: '15px', 
+              borderRadius: '12px',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
             }}>
               <div style={{ 
-                width: '32px', 
-                height: '32px', 
-                backgroundColor: '#3b82f6', 
+                width: '36px', 
+                height: '36px', 
+                background: 'linear-gradient(135deg, #FF6B9D 0%, #C850C8 100%)', 
                 borderRadius: '50%', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                marginRight: '12px'
+                marginRight: '12px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
               }}>
-                <MessageCircle size={16} />
+                <MessageCircle size={18} />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>Current Chat</span>
+              <span style={{ fontSize: '16px', fontWeight: '600', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>Current Chat</span>
             </div>
             
             {/* Chat History Section */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: '500', margin: '0 0 12px 0', opacity: '0.7' }}>Recent Chats</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', margin: '0 0 15px 0', opacity: '0.9', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>Recent Chats</h3>
               
               {demoChats.map((chat) => (
                 <button
@@ -291,27 +301,31 @@ export default function Chats() {
                     display: 'flex', 
                     flexDirection: 'column',
                     alignItems: 'flex-start',
-                    padding: '12px', 
-                    backgroundColor: 'transparent', 
-                    border: '1px solid #475569',
-                    borderRadius: '8px',
+                    padding: '15px', 
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)', 
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '10px',
                     color: 'white',
                     fontSize: '14px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    textAlign: 'left'
+                    transition: 'all 0.3s ease',
+                    textAlign: 'left',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = '#334155';
-                    e.currentTarget.style.borderColor = '#64748b';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.borderColor = '#475569';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
                   }}
                 >
-                  <div style={{ fontWeight: '500', marginBottom: '4px' }}>{chat.name}</div>
-                  <div style={{ fontSize: '12px', opacity: '0.7', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '6px', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>{chat.name}</div>
+                  <div style={{ fontSize: '12px', opacity: '0.8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
                     {chat.lastMessage}
                   </div>
                 </button>
@@ -321,47 +335,45 @@ export default function Chats() {
             {/* Separator Line */}
             <div style={{ 
               height: '1px', 
-              backgroundColor: '#475569', 
-              margin: '20px 0'
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)', 
+              margin: '25px 0'
             }}></div>
             
             {/* Navigation Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <button
                 onClick={handleDashboardClick}
                 style={{ 
                   width: '100%',
                   display: 'flex', 
                   alignItems: 'center', 
-                  padding: '12px', 
-                  backgroundColor: 'transparent', 
-                  border: '1px solid #475569',
-                  borderRadius: '8px',
+                  padding: '15px', 
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)', 
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '10px',
                   color: 'white',
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '15px',
+                  fontWeight: '600',
                   cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
                 }}
                 onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#334155';
-                  e.target.style.borderColor = '#64748b';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.borderColor = '#475569';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
                 }}
               >
-                <LayoutDashboard size={16} style={{ marginRight: '12px' }} />
+                <LayoutDashboard size={18} style={{ marginRight: '12px' }} />
                 Dashboard
               </button>
-              
-              {/* Line after Dashboard button */}
-              <div style={{ 
-                height: '1px', 
-                backgroundColor: '#475569', 
-                margin: '0'
-              }}></div>
               
               <button
                 onClick={handleProfileClick}
@@ -369,35 +381,33 @@ export default function Chats() {
                   width: '100%',
                   display: 'flex', 
                   alignItems: 'center', 
-                  padding: '12px', 
-                  backgroundColor: 'transparent', 
-                  border: '1px solid #475569',
-                  borderRadius: '8px',
+                  padding: '15px', 
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)', 
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '10px',
                   color: 'white',
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '15px',
+                  fontWeight: '600',
                   cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
                 }}
                 onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#334155';
-                  e.target.style.borderColor = '#64748b';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.borderColor = '#475569';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
                 }}
               >
-                <UserCircle size={16} style={{ marginRight: '12px' }} />
+                <UserCircle size={18} style={{ marginRight: '12px' }} />
                 Profile
               </button>
-              
-              {/* Line after Profile button */}
-              <div style={{ 
-                height: '1px', 
-                backgroundColor: '#475569', 
-                margin: '0'
-              }}></div>
 
               <button
                 onClick={handleLogoutClick}
@@ -405,35 +415,35 @@ export default function Chats() {
                   width: '100%',
                   display: 'flex', 
                   alignItems: 'center', 
-                  padding: '12px', 
-                  backgroundColor: 'transparent', 
-                  border: '1px solid #dc2626',
-                  borderRadius: '8px',
-                  color: '#ef4444',
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  padding: '15px', 
+                  background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%)', 
+                  border: '1px solid rgba(220, 38, 38, 0.3)',
+                  borderRadius: '10px',
+                  color: '#ff6b6b',
+                  fontSize: '15px',
+                  fontWeight: '600',
                   cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.1)',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
                 }}
                 onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#dc2626';
+                  e.target.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
                   e.target.style.color = 'white';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(220, 38, 38, 0.25)';
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#ef4444';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%)';
+                  e.target.style.color = '#ff6b6b';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.1)';
                 }}
               >
-                <LogOut size={16} style={{ marginRight: '12px' }} />
+                <LogOut size={18} style={{ marginRight: '12px' }} />
                 Logout
               </button>
-              
-              {/* Line after Logout button */}
-              <div style={{ 
-                height: '1px', 
-                backgroundColor: '#475569', 
-                margin: '0'
-              }}></div>
             </div>
           </div>
         )}
@@ -447,39 +457,52 @@ export default function Chats() {
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               style={{
-                padding: '8px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: 'white',
-                borderRadius: '6px',
-                marginRight: '12px',
+                padding: '10px',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#2C3E50',
+                borderRadius: '8px',
+                marginRight: '15px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#334155'}
-              onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+              onMouseOver={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%)';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)';
+                e.target.style.transform = 'translateY(0)';
+              }}
             >
               {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
             <div>
-              <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>AI Chat Assistant</h1>
-              <p style={{ fontSize: '12px', opacity: 0.7, margin: 0 }}>
+              <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0, color: '#2C3E50', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>AI Chat Assistant</h1>
+              <p style={{ fontSize: '13px', opacity: 0.7, margin: 0, color: '#5A6C7D' }}>
                 {messages.length > 1 ? `${messages.length - 1} messages` : 'Start a conversation'}
               </p>
             </div>
           </div>
           <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            backgroundColor: '#64748b', 
+            width: '40px', 
+            height: '40px', 
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)', 
             borderRadius: '50%', 
             display: 'flex', 
             alignItems: 'center', 
-            justifyContent: 'center' 
+            justifyContent: 'center',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#2C3E50',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
           }}>
-            <User size={16} />
+            <User size={18} />
           </div>
         </div>
         
@@ -492,24 +515,28 @@ export default function Chats() {
                 style={{ 
                   display: 'flex', 
                   alignItems: 'flex-start', 
-                  gap: '12px',
-                  marginBottom: '20px',
+                  gap: '15px',
+                  marginBottom: '25px',
                   justifyContent: message.isBot ? 'flex-start' : 'flex-end'
                 }}
               >
                 {message.isBot && (
                   <div style={{ 
-                    width: '32px', 
-                    height: '32px', 
-                    backgroundColor: message.isError ? '#ef4444' : '#3b82f6', 
+                    width: '40px', 
+                    height: '40px', 
+                    background: message.isError ? 
+                      'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)' : 
+                      'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)', 
                     borderRadius: '50%', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
                     color: 'white',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     fontWeight: 'bold',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                    border: '2px solid rgba(255, 255, 255, 0.2)'
                   }}>
                     AI
                   </div>
@@ -517,25 +544,36 @@ export default function Chats() {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: message.isBot ? 'flex-start' : 'flex-end' }}>
                   <div style={{
-                    backgroundColor: message.isBot ? (message.isError ? '#fef2f2' : '#e2e8f0') : '#3b82f6',
-                    color: message.isBot ? (message.isError ? '#dc2626' : '#1f2937') : 'white',
-                    padding: '12px 16px',
-                    borderRadius: '16px',
-                    maxWidth: '400px',
-                    fontSize: '14px',
-                    lineHeight: '1.5',
-                    borderTopLeftRadius: message.isBot ? '4px' : '16px',
-                    borderTopRightRadius: message.isBot ? '16px' : '4px',
-                    wordWrap: 'break-word'
+                    background: message.isBot ? 
+                      (message.isError ? 
+                        'linear-gradient(135deg, #ffe8e8 0%, #ffdddd 100%)' : 
+                        'linear-gradient(135deg, #a8d8ff 0%, #87CEEB 100%)'
+                      ) : 
+                      'linear-gradient(135deg, #FFD4A3 0%, #FDB777 100%)',
+                    color: message.isBot ? 
+                      (message.isError ? '#dc2626' : '#2C3E50') : '#8B4513',
+                    padding: '15px 20px',
+                    borderRadius: '20px',
+                    maxWidth: '450px',
+                    fontSize: '15px',
+                    lineHeight: '1.6',
+                    borderTopLeftRadius: message.isBot ? '8px' : '20px',
+                    borderTopRightRadius: message.isBot ? '20px' : '8px',
+                    wordWrap: 'break-word',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    backdropFilter: 'blur(10px)',
+                    fontWeight: '500'
                   }}>
                     {message.text}
                   </div>
                   <div style={{ 
-                    fontSize: '11px', 
-                    color: '#64748b', 
-                    marginTop: '4px',
+                    fontSize: '12px', 
+                    color: '#8B7355', 
+                    marginTop: '6px',
                     marginLeft: message.isBot ? '0' : 'auto',
-                    marginRight: message.isBot ? 'auto' : '0'
+                    marginRight: message.isBot ? 'auto' : '0',
+                    fontWeight: '500'
                   }}>
                     {formatTime(message.timestamp)}
                   </div>
@@ -548,33 +586,39 @@ export default function Chats() {
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'flex-start', 
-                gap: '12px',
-                marginBottom: '20px',
+                gap: '15px',
+                marginBottom: '25px',
                 justifyContent: 'flex-start'
               }}>
                 <div style={{ 
-                  width: '32px', 
-                  height: '32px', 
-                  backgroundColor: '#3b82f6', 
+                  width: '40px', 
+                  height: '40px', 
+                  background: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)', 
                   borderRadius: '50%', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
                   color: 'white',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   fontWeight: 'bold',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                  border: '2px solid rgba(255, 255, 255, 0.2)'
                 }}>
-                  <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                  <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
                 </div>
                 <div style={{
-                  backgroundColor: '#e2e8f0',
-                  color: '#1f2937',
-                  padding: '12px 16px',
-                  borderRadius: '16px',
-                  borderTopLeftRadius: '4px',
-                  fontSize: '14px',
-                  fontStyle: 'italic'
+                  background: 'linear-gradient(135deg, #a8d8ff 0%, #87CEEB 100%)',
+                  color: '#2C3E50',
+                  padding: '15px 20px',
+                  borderRadius: '20px',
+                  borderTopLeftRadius: '8px',
+                  fontSize: '15px',
+                  fontStyle: 'italic',
+                  fontWeight: '500',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  backdropFilter: 'blur(10px)'
                 }}>
                   AI is typing...
                 </div>
@@ -587,37 +631,52 @@ export default function Chats() {
         
         {/* Message Input */}
         <div style={inputContainerStyle}>
-          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'flex-end', gap: '15px' }}>
             <textarea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)"
+              placeholder="Type your message here..."
               disabled={isLoading}
               style={{
                 flex: 1,
-                padding: '12px 16px',
-                backgroundColor: 'white',
-                border: '1px solid #d1d5db',
-                borderRadius: '20px',
-                fontSize: '14px',
+                padding: '15px 20px',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '25px',
+                fontSize: '15px',
                 outline: 'none',
                 resize: 'none',
-                minHeight: '48px',
+                minHeight: '52px',
                 maxHeight: '120px',
                 overflowY: 'auto',
                 fontFamily: 'inherit',
-                opacity: isLoading ? 0.6 : 1
+                opacity: isLoading ? 0.6 : 1,
+                color: '#2C3E50',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                fontWeight: '500'
               }}
               rows={1}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'rgba(116, 185, 255, 0.5)';
+                e.target.style.boxShadow = '0 4px 20px rgba(116, 185, 255, 0.3)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+              }}
             />
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
               style={{
-                width: '48px',
-                height: '48px',
-                backgroundColor: (!inputMessage.trim() || isLoading) ? '#9ca3af' : '#3b82f6',
+                width: '52px',
+                height: '52px',
+                background: (!inputMessage.trim() || isLoading) ? 
+                  'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)' : 
+                  'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
                 border: 'none',
                 borderRadius: '50%',
                 color: 'white',
@@ -625,20 +684,28 @@ export default function Chats() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'background-color 0.2s'
+                transition: 'all 0.3s ease',
+                boxShadow: (!inputMessage.trim() || isLoading) ? 
+                  '0 2px 8px rgba(0, 0, 0, 0.1)' : 
+                  '0 4px 15px rgba(116, 185, 255, 0.4)',
+                transform: 'scale(1)'
               }}
               onMouseOver={(e) => {
                 if (!isLoading && inputMessage.trim()) {
-                  e.target.style.backgroundColor = '#2563eb'
+                  e.target.style.background = 'linear-gradient(135deg, #0984e3 0%, #74b9ff 100%)';
+                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(116, 185, 255, 0.5)';
                 }
               }}
               onMouseOut={(e) => {
                 if (!isLoading && inputMessage.trim()) {
-                  e.target.style.backgroundColor = '#3b82f6'
+                  e.target.style.background = 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)';
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(116, 185, 255, 0.4)';
                 }
               }}
             >
-              {isLoading ? <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={18} />}
+              {isLoading ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={20} />}
             </button>
           </div>
         </div>
@@ -652,74 +719,97 @@ export default function Chats() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000
+          zIndex: 1000,
+          backdropFilter: 'blur(10px)'
         }}>
           <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '24px',
-            maxWidth: '400px',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+            borderRadius: '20px',
+            padding: '30px',
+            maxWidth: '420px',
             width: '90%',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(20px)'
           }}>
             <h3 style={{
-              fontSize: '18px',
-              fontWeight: '600',
+              fontSize: '20px',
+              fontWeight: '700',
               color: '#1f2937',
-              margin: '0 0 12px 0'
+              margin: '0 0 15px 0',
+              textAlign: 'center'
             }}>
               Confirm Logout
             </h3>
             <p style={{
-              fontSize: '14px',
+              fontSize: '15px',
               color: '#6b7280',
-              margin: '0 0 20px 0',
-              lineHeight: '1.5'
+              margin: '0 0 25px 0',
+              lineHeight: '1.6',
+              textAlign: 'center'
             }}>
               Are you sure you want to log out? You'll need to sign in again to access your account.
             </p>
             <div style={{
               display: 'flex',
-              gap: '12px',
-              justifyContent: 'flex-end'
+              gap: '15px',
+              justifyContent: 'center'
             }}>
               <button
                 onClick={handleCancelLogout}
                 style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#f3f4f6',
-                  border: 'none',
-                  borderRadius: '6px',
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '10px',
                   color: '#374151',
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '15px',
+                  fontWeight: '600',
                   cursor: 'pointer',
-                  transition: 'background-color 0.2s'
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                 }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                }}
               >
-                No
+                Cancel
               </button>
               <button
                 onClick={handleConfirmLogout}
                 style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#dc2626',
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: '10px',
                   color: 'white',
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '15px',
+                  fontWeight: '600',
                   cursor: 'pointer',
-                  transition: 'background-color 0.2s'
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'
                 }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#b91c1c'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#dc2626'}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #b91c1c 0%, #991b1b 100%)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(220, 38, 38, 0.4)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(220, 38, 38, 0.3)';
+                }}
               >
                 Yes, Log Out
               </button>
@@ -732,6 +822,25 @@ export default function Chats() {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        
+        /* Custom scrollbar styles */
+        *::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        *::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+        
+        *::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+          border-radius: 4px;
+        }
+        
+        *::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.3) 100%);
         }
       `}</style>
     </div>

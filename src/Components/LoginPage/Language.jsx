@@ -38,7 +38,7 @@ const LanguageGridSelector = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#f9fafb',
+      backgroundColor:'#F9F9EF',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

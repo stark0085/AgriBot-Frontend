@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import toast from 'react-hot-toast';
+import HappyFarmerImage from '../../assets/HappyFarmer.png';
 
 // List of Indian states for the dropdown
 const indianStates = [
@@ -120,23 +121,33 @@ const SignUpForm = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div style={{ 
+      display: 'flex', 
+      height: '100vh', 
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      overflow: 'hidden'
+    }}>
       {/* Left side - Form */}
       <div style={{ 
         width: '50%', 
-        padding: '30px 80px', 
+        padding: '20px 60px', 
         backgroundColor: 'white',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        overflowY: 'auto'
+        overflowY: 'auto',
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, rgba(74, 222, 128, 0.05) 100%)'
       }}>
-        <div style={{ maxWidth: '400px', width: '100%' }}>
+        <div style={{ maxWidth: '380px', width: '100%' }}>
           <h1 style={{ 
-            fontSize: '48px', 
+            fontSize: '42px', 
             fontWeight: 'bold', 
-            color: '#000', 
-            margin: '0 0 60px 0'
+            color: '#1f2937', 
+            margin: '0 0 40px 0',
+            background: 'linear-gradient(135deg, #1f2937 0%, #4ade80 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
           }}>
             Sign Up
           </h1>
@@ -145,10 +156,11 @@ const SignUpForm = () => {
             <div style={{
               backgroundColor: '#fee2e2',
               color: '#dc2626',
-              padding: '12px 16px',
+              padding: '10px 14px',
               borderRadius: '8px',
-              marginBottom: '24px',
-              fontSize: '14px'
+              marginBottom: '20px',
+              fontSize: '14px',
+              border: '1px solid #fecaca'
             }}>
               {errors.submit}
             </div>
@@ -156,13 +168,13 @@ const SignUpForm = () => {
           
           <div>
             {/* Full Name */}
-            <div style={{ marginBottom: '18px' }}>
+            <div style={{ marginBottom: '16px' }}>
               <label style={{ 
                 display: 'block', 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 fontWeight: '600', 
                 color: '#374151', 
-                marginBottom: '12px' 
+                marginBottom: '8px' 
               }}>
                 Full Name <span style={{ color: '#ef4444' }}>*</span>
               </label>
@@ -174,32 +186,45 @@ const SignUpForm = () => {
                 placeholder="Enter your full name"
                 style={{
                   width: '100%',
-                  maxWidth: '360px',
-                  height: '56px',
-                  padding: '0 16px',
-                  border: `2px solid ${errors.fullName ? '#ef4444' : '#d1d5db'}`,
-                  borderRadius: '12px',
-                  fontSize: '16px',
+                  height: '48px',
+                  padding: '0 14px',
+                  border: `2px solid ${errors.fullName ? '#ef4444' : '#e5e7eb'}`,
+                  borderRadius: '8px',
+                  fontSize: '15px',
                   outline: 'none',
                   backgroundColor: '#fff',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxShadow: errors.fullName ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                }}
+                onFocus={(e) => {
+                  if (!errors.fullName) {
+                    e.target.style.borderColor = '#4ade80';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(74, 222, 128, 0.1)';
+                  }
+                }}
+                onBlur={(e) => {
+                  if (!errors.fullName) {
+                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.boxShadow = 'none';
+                  }
                 }}
               />
               {errors.fullName && (
-                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                <p style={{ color: '#ef4444', fontSize: '13px', margin: '4px 0 0 0' }}>
                   {errors.fullName}
                 </p>
               )}
             </div>
 
             {/* Email Address */}
-            <div style={{ marginBottom: '18px' }}>
+            <div style={{ marginBottom: '16px' }}>
               <label style={{ 
                 display: 'block', 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 fontWeight: '600', 
                 color: '#374151', 
-                marginBottom: '12px' 
+                marginBottom: '8px' 
               }}>
                 Email Address <span style={{ color: '#ef4444' }}>*</span>
               </label>
@@ -211,114 +236,156 @@ const SignUpForm = () => {
                 placeholder="Enter your email address"
                 style={{
                   width: '100%',
-                  maxWidth: '360px',
-                  height: '56px',
-                  padding: '0 16px',
-                  border: `2px solid ${errors.email ? '#ef4444' : '#d1d5db'}`,
-                  borderRadius: '12px',
-                  fontSize: '16px',
+                  height: '48px',
+                  padding: '0 14px',
+                  border: `2px solid ${errors.email ? '#ef4444' : '#e5e7eb'}`,
+                  borderRadius: '8px',
+                  fontSize: '15px',
                   outline: 'none',
                   backgroundColor: '#fff',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxShadow: errors.email ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                }}
+                onFocus={(e) => {
+                  if (!errors.email) {
+                    e.target.style.borderColor = '#4ade80';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(74, 222, 128, 0.1)';
+                  }
+                }}
+                onBlur={(e) => {
+                  if (!errors.email) {
+                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.boxShadow = 'none';
+                  }
                 }}
               />
               {errors.email && (
-                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                <p style={{ color: '#ef4444', fontSize: '13px', margin: '4px 0 0 0' }}>
                   {errors.email}
                 </p>
               )}
             </div>
 
-            {/* State */}
-            <div style={{ marginBottom: '18px' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                color: '#374151', 
-                marginBottom: '12px' 
-              }}>
-                State <span style={{ color: '#ef4444' }}>*</span>
-              </label>
-              <select
-                name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  maxWidth: '360px',
-                  height: '56px',
-                  padding: '0 16px',
-                  border: `2px solid ${errors.state ? '#ef4444' : '#d1d5db'}`,
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: '#fff',
-                  boxSizing: 'border-box',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="">Select State</option>
-                {indianStates.map(state => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
-              </select>
-              {errors.state && (
-                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
-                  {errors.state}
-                </p>
-              )}
-            </div>
+            {/* State and District in a row */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+              {/* State */}
+              <div style={{ flex: 1 }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '16px', 
+                  fontWeight: '600', 
+                  color: '#374151', 
+                  marginBottom: '8px' 
+                }}>
+                  State <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '100%',
+                    height: '48px',
+                    padding: '0 14px',
+                    border: `2px solid ${errors.state ? '#ef4444' : '#e5e7eb'}`,
+                    borderRadius: '8px',
+                    fontSize: '15px',
+                    outline: 'none',
+                    backgroundColor: '#fff',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    boxShadow: errors.state ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                  }}
+                  onFocus={(e) => {
+                    if (!errors.state) {
+                      e.target.style.borderColor = '#4ade80';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(74, 222, 128, 0.1)';
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.state) {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }
+                  }}
+                >
+                  <option value="">Select State</option>
+                  {indianStates.map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+                {errors.state && (
+                  <p style={{ color: '#ef4444', fontSize: '13px', margin: '4px 0 0 0' }}>
+                    {errors.state}
+                  </p>
+                )}
+              </div>
 
-            {/* District */}
-            <div style={{ marginBottom: '18px' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                color: '#374151', 
-                marginBottom: '12px' 
-              }}>
-                District <span style={{ color: '#ef4444' }}>*</span>
-              </label>
-              <input
-                type="text"
-                name="district"
-                value={formData.district}
-                onChange={handleInputChange}
-                placeholder="Enter your district"
-                style={{
-                  width: '100%',
-                  maxWidth: '360px',
-                  height: '56px',
-                  padding: '0 16px',
-                  border: `2px solid ${errors.district ? '#ef4444' : '#d1d5db'}`,
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: '#fff',
-                  boxSizing: 'border-box'
-                }}
-              />
-              {errors.district && (
-                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
-                  {errors.district}
-                </p>
-              )}
+              {/* District */}
+              <div style={{ flex: 1 }}>
+                <label style={{ 
+                  display: 'block', 
+                  fontSize: '16px', 
+                  fontWeight: '600', 
+                  color: '#374151', 
+                  marginBottom: '8px' 
+                }}>
+                  District <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  name="district"
+                  value={formData.district}
+                  onChange={handleInputChange}
+                  placeholder="Enter your district"
+                  style={{
+                    width: '100%',
+                    height: '48px',
+                    padding: '0 14px',
+                    border: `2px solid ${errors.district ? '#ef4444' : '#e5e7eb'}`,
+                    borderRadius: '8px',
+                    fontSize: '15px',
+                    outline: 'none',
+                    backgroundColor: '#fff',
+                    boxSizing: 'border-box',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    boxShadow: errors.district ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                  }}
+                  onFocus={(e) => {
+                    if (!errors.district) {
+                      e.target.style.borderColor = '#4ade80';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(74, 222, 128, 0.1)';
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.district) {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }
+                  }}
+                />
+                {errors.district && (
+                  <p style={{ color: '#ef4444', fontSize: '13px', margin: '4px 0 0 0' }}>
+                    {errors.district}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Password */}
-            <div style={{ marginBottom: '18px' }}>
+            <div style={{ marginBottom: '16px' }}>
               <label style={{ 
                 display: 'block', 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 fontWeight: '600', 
                 color: '#374151', 
-                marginBottom: '12px' 
+                marginBottom: '8px' 
               }}>
                 Password <span style={{ color: '#ef4444' }}>*</span>
               </label>
-              <div style={{ position: 'relative', maxWidth: '360px' }}>
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -327,14 +394,28 @@ const SignUpForm = () => {
                   placeholder="Enter your password"
                   style={{
                     width: '100%',
-                    height: '56px',
-                    padding: '0 56px 0 16px',
-                    border: `2px solid ${errors.password ? '#ef4444' : '#d1d5db'}`,
-                    borderRadius: '12px',
-                    fontSize: '16px',
+                    height: '48px',
+                    padding: '0 50px 0 14px',
+                    border: `2px solid ${errors.password ? '#ef4444' : '#e5e7eb'}`,
+                    borderRadius: '8px',
+                    fontSize: '15px',
                     outline: 'none',
                     backgroundColor: '#fff',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    boxShadow: errors.password ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                  }}
+                  onFocus={(e) => {
+                    if (!errors.password) {
+                      e.target.style.borderColor = '#4ade80';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(74, 222, 128, 0.1)';
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.password) {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }
                   }}
                 />
                 <button
@@ -342,7 +423,7 @@ const SignUpForm = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
                     position: 'absolute',
-                    right: '16px',
+                    right: '14px',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     border: 'none',
@@ -355,28 +436,28 @@ const SignUpForm = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && (
-                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                <p style={{ color: '#ef4444', fontSize: '13px', margin: '4px 0 0 0' }}>
                   {errors.password}
                 </p>
               )}
             </div>
 
             {/* Confirm Password */}
-            <div style={{ marginBottom: '48px' }}>
+            <div style={{ marginBottom: '32px' }}>
               <label style={{ 
                 display: 'block', 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 fontWeight: '600', 
                 color: '#374151', 
-                marginBottom: '12px' 
+                marginBottom: '8px' 
               }}>
                 Confirm Password <span style={{ color: '#ef4444' }}>*</span>
               </label>
-              <div style={{ position: 'relative', maxWidth: '360px' }}>
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
@@ -385,14 +466,28 @@ const SignUpForm = () => {
                   placeholder="Confirm your password"
                   style={{
                     width: '100%',
-                    height: '56px',
-                    padding: '0 56px 0 16px',
-                    border: `2px solid ${errors.confirmPassword ? '#ef4444' : '#d1d5db'}`,
-                    borderRadius: '12px',
-                    fontSize: '16px',
+                    height: '48px',
+                    padding: '0 50px 0 14px',
+                    border: `2px solid ${errors.confirmPassword ? '#ef4444' : '#e5e7eb'}`,
+                    borderRadius: '8px',
+                    fontSize: '15px',
                     outline: 'none',
                     backgroundColor: '#fff',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    boxShadow: errors.confirmPassword ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                  }}
+                  onFocus={(e) => {
+                    if (!errors.confirmPassword) {
+                      e.target.style.borderColor = '#4ade80';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(74, 222, 128, 0.1)';
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.confirmPassword) {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }
                   }}
                 />
                 <button
@@ -400,7 +495,7 @@ const SignUpForm = () => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   style={{
                     position: 'absolute',
-                    right: '16px',
+                    right: '14px',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     border: 'none',
@@ -413,11 +508,11 @@ const SignUpForm = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p style={{ color: '#ef4444', fontSize: '14px', margin: '4px 0 0 0' }}>
+                <p style={{ color: '#ef4444', fontSize: '13px', margin: '4px 0 0 0' }}>
                   {errors.confirmPassword}
                 </p>
               )}
@@ -429,26 +524,38 @@ const SignUpForm = () => {
               disabled={isSubmitting}
               style={{
                 width: '100%',
-                maxWidth: '360px',
-                height: '56px',
-                backgroundColor: isSubmitting ? '#9ca3af' : '#25eb5a',
+                height: '50px',
+                background: isSubmitting ? 'linear-gradient(135deg, #9ca3af, #6b7280)' : 'linear-gradient(135deg, #22c55e, #4ade80)',
                 color: 'white',
-                fontSize: '18px',
+                fontSize: '16px',
                 fontWeight: '600',
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: '8px',
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.2s',
-                marginBottom: '24px'
+                transition: 'all 0.2s',
+                marginBottom: '20px',
+                boxShadow: isSubmitting ? 'none' : '0 4px 12px rgba(74, 222, 128, 0.3)'
+              }}
+              onMouseOver={(e) => {
+                if (!isSubmitting) {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(74, 222, 128, 0.4)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isSubmitting) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(74, 222, 128, 0.3)';
+                }
               }}
             >
               {isSubmitting ? 'Creating Account...' : 'Sign Up'}
             </button>
 
             {/* Already have an account */}
-            <div style={{ textAlign: 'center', maxWidth: '360px' }}>
+            <div style={{ textAlign: 'center' }}>
               <p style={{ 
-                fontSize: '16px', 
+                fontSize: '15px', 
                 color: '#6b7280',
                 margin: '0'
               }}>
@@ -456,17 +563,24 @@ const SignUpForm = () => {
                 <button
                   onClick={() => navigate('/login')}
                   style={{ 
-                    color: '#2563eb',
+                    color: '#4ade80',
                     textDecoration: 'none',
                     fontWeight: '600',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
                     padding: 0,
-                    fontSize: '16px'
+                    fontSize: '15px',
+                    transition: 'color 0.2s'
                   }}
-                  onMouseOver={e => e.target.style.textDecoration = 'underline'}
-                  onMouseOut={e => e.target.style.textDecoration = 'none'}
+                  onMouseOver={e => {
+                    e.target.style.textDecoration = 'underline';
+                    e.target.style.color = '#22c55e';
+                  }}
+                  onMouseOut={e => {
+                    e.target.style.textDecoration = 'none';
+                    e.target.style.color = '#4ade80';
+                  }}
                 >
                   Login
                 </button>
@@ -476,35 +590,34 @@ const SignUpForm = () => {
         </div>
       </div>
 
-      {/* Right side - Image */}
+      {/* Right side - Full Image with Smart Color Merging */}
       <div style={{ 
         width: '50%', 
-        backgroundColor: '#4ade80',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
+        {/* Farmer image filling entire right side */}
+        <img
+          src={HappyFarmerImage}
+          alt="Happy Farmer"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center center'
+          }}
+        />
+        
+        {/* Smart gradient overlay to merge with left white background */}
         <div style={{
-          width: '80%',
-          height: '80%',
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          borderRadius: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontSize: '24px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-        }}>
-          🌾 Happy Farmer Image
-          <br />
-          <span style={{ fontSize: '16px', fontWeight: 'normal' }}>
-            (Replace with your image)
-          </span>
-        </div>
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 20%, transparent 40%)',
+          zIndex: 1
+        }} />
       </div>
     </div>
   );

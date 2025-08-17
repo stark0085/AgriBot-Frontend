@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import toast from 'react-hot-toast';
-import yourImage from '../../assets/farmer_3_member.png'; // Adjust the path to your image
+import yourImage from '../../assets/farmer_hand.png'; // Adjust the path to your image
 
 const LoginForm = () => {
   const { login } = useContext(ProfileContext);
@@ -102,7 +102,7 @@ const LoginForm = () => {
       <div style={{ 
         width: '30%', 
         padding: '80px 200px', 
-        background:'linear-gradient(225deg, #fdfefe 0%, #e1f9ec 100%)',
+        background:'linear-gradient(to top right, #ffffff 0%, #ffffff 25%, #f6fbff 50%, #e3f5ff 75%, #c9eaff 100%)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',

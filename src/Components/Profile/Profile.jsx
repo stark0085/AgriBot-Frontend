@@ -459,7 +459,7 @@ const ProfilePage = () => {
       border: '1px solid #d1d5db',
       borderRadius: '8px',
       fontSize: '16px',
-      backgroundColor: '#f9fafb',
+      backgroundColor: '#F9F9EF',
       color: '#111827',
       boxSizing: 'border-box'
   };
@@ -467,7 +467,7 @@ const ProfilePage = () => {
   const labelStyle = {
       display: 'block',
       fontWeight: '600',
-      color: '#374151',
+      color: '#385137ff',
       marginBottom: '8px',
       fontSize: '14px'
   };
