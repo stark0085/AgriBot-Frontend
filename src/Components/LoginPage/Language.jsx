@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../Contexts/ProfileProvider';
-import { Toaster } from 'react-hot-toast';
 
 const LanguageGridSelector = () => {
   const { selectedLanguage, updateLanguage } = useContext(ProfileContext);
@@ -46,11 +45,10 @@ const LanguageGridSelector = () => {
   };
 
   const handleContinue = () => {
-    // Save the selected language to context and localStorage
     updateLanguage(tempSelectedLanguage);
-    
-    // Navigate based on your app flow - you might want to go to login or dashboard
-    navigate('/login');
+    setTimeout(() => {
+      navigate('/login');
+    }, 100);
   };
 
   return (
@@ -62,10 +60,7 @@ const LanguageGridSelector = () => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px'
-    }}>
-      {/* Toast Container */}
-      <Toaster />
-      
+    }}>      
       <div style={{ width: '100%', maxWidth: '600px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{
@@ -77,7 +72,6 @@ const LanguageGridSelector = () => {
             Select your language
           </h1>
           
-          {/* Show current saved language if different from temp selection */}
           {selectedLanguage && selectedLanguage !== tempSelectedLanguage && (
             <p style={{
               fontSize: '14px',
@@ -119,44 +113,19 @@ const LanguageGridSelector = () => {
                       transition: 'all 0.2s',
                       width: 'calc(50% - 6px)',
                       boxSizing: 'border-box',
-                      userSelect: 'none',
-                      textRendering: 'optimizeLegibility',
-                      WebkitFontSmoothing: 'antialiased',
-                      MozOsxFontSmoothing: 'grayscale',
-                      fontFeatureSettings: 'normal',
-                      fontVariantLigatures: 'none'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (tempSelectedLanguage !== lang.name) {
-                        e.target.style.backgroundColor = '#f9fafb';
-                        e.target.style.borderColor = '#d1d5db';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (tempSelectedLanguage !== lang.name) {
-                        e.target.style.backgroundColor = 'white';
-                        e.target.style.borderColor = '#e5e7eb';
-                      }
+                      userSelect: 'none'
                     }}
                   >
                     <div style={{
                       fontSize: '18px',
                       fontWeight: '500',
-                      marginBottom: '4px',
-                      background: 'transparent',
-                      backgroundColor: 'transparent',
-                      textRendering: 'optimizeLegibility',
-                      WebkitFontSmoothing: 'antialiased'
+                      marginBottom: '4px'
                     }}>
                       {lang.label}
                     </div>
                     <div style={{
                       fontSize: '14px',
-                      color: tempSelectedLanguage === lang.name ? '#16a34a' : '#6b7280',
-                      background: 'transparent',
-                      backgroundColor: 'transparent',
-                      textRendering: 'optimizeLegibility',
-                      WebkitFontSmoothing: 'antialiased'
+                      color: tempSelectedLanguage === lang.name ? '#16a34a' : '#6b7280'
                     }}>
                       {lang.name}
                     </div>
@@ -194,16 +163,6 @@ const LanguageGridSelector = () => {
               transition: 'all 0.2s',
               fontSize: '16px',
               boxShadow: '0 2px 8px rgba(22, 163, 74, 0.3)'
-            }}
-            onMouseEnter={e => {
-              e.target.style.backgroundColor = '#15803d';
-              e.target.style.transform = 'translateY(-1px)';
-              e.target.style.boxShadow = '0 4px 12px rgba(22, 163, 74, 0.4)';
-            }}
-            onMouseLeave={e => {
-              e.target.style.backgroundColor = '#16a34a';
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 2px 8px rgba(22, 163, 74, 0.3)';
             }}
           >
             Continue with {tempSelectedLanguage}

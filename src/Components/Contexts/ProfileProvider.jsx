@@ -57,7 +57,6 @@ const ProfileProvider = ({ children }) => {
       const data = await response.json();
 
       if (data.code === 0) {
-        // --- KEY CHANGE IS HERE ---
         // Create a complete user data object from the API response
         const userData = {
           email: credentials.email,
