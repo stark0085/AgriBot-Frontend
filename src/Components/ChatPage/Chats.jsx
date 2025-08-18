@@ -1,143 +1,100 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Send, User, MessageCircle, X, Loader, LayoutDashboard, UserCircle, LogOut } from 'lucide-react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Add this import
+
+// Import the real context from your provider file
+// Note: Adjust the path ('../Contexts/ProfileProvider') to match your project structure.
 import { ProfileContext } from '../Contexts/ProfileProvider';
 
-export default function Chats() {
+function Chats() {
+  // State for messages in the current chat session
   const [messages, setMessages] = useState([
     { id: 1, text: "Hello! How can I help you today?", isBot: true, timestamp: new Date() }
   ]);
-
+  
+  // State for user input and UI controls
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [chatHistory, setChatHistory] = useState([]);
-  const [currentChatId, setCurrentChatId] = useState(null);
 
+  // Refs and hooks for navigation and context
   const messagesEndRef = useRef(null);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { logout, user } = useContext(ProfileContext);
+  // Mocking useNavigate and useLocation as they require a Router context
+  const navigate = useNavigate(); // Use the real navigate hook
+  const location = { state: {} }; 
+  
+  // This now correctly uses the user data from your real ProfileProvider
+  const { logout, user } = useContext(ProfileContext); 
   const initialMessageProcessed = useRef(false);
 
-  useEffect(() => {
-    if (user?.email) {
-      fetchChatHistory();
-    }
-  }, [user]);
-
-  const fetchChatHistory = async () => {
-    if (!user?.email) return;
-    try {
-      const response = await fetch(`http://localhost:3000/messages/history/${user.email}`);
-      if (response.ok) {
-        const data = await response.json();
-        const transformedHistory = data.map(convo => ({
-          id: convo.conversationId,
-          name: formatConversationName(convo.startTime),
-          lastMessage: convo.lastMessage || "No messages yet",
-          timestamp: new Date(convo.startTime).getTime()
-        })).sort((a, b) => b.timestamp - a.timestamp);
-        setChatHistory(transformedHistory);
-      }
-    } catch (error) {
-      console.error('Error fetching chat history:', error);
-    }
-  };
-
-  const formatConversationName = (isoString) => {
-    const conversationDate = new Date(isoString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    let dateStr;
-    if (conversationDate.toDateString() === today.toDateString()) {
-      dateStr = 'Today';
-    } else if (conversationDate.toDateString() === yesterday.toDateString()) {
-      dateStr = 'Yesterday';
-    } else {
-      dateStr = conversationDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
-
-    const timeStr = conversationDate.toLocaleTimeString('en-US', {
-      hour: 'numeric', minute: '2-digit', hour12: true
-    });
-
-    return `${dateStr} at ${timeStr}`;
-  };
-
+  // Function to automatically scroll to the latest message
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Effect to scroll down when messages change
   useEffect(scrollToBottom, [messages]);
 
+  // Effect to handle an initial message passed via navigation state
   useEffect(() => {
     const initialMessage = location.state?.initialMessage;
     if (initialMessage && !initialMessageProcessed.current) {
       initialMessageProcessed.current = true;
       processUserMessage(initialMessage);
-      navigate('.', { replace: true, state: {} });
     }
-  }, [location.state, navigate]);
+  }, [location.state]);
 
-  const sendMessageToAPI = async (userMessage, conversationId) => {
+  /**
+   * Sends the user's message to the backend API using axios.
+   * This version does not include conversationId.
+   * @param {string} userMessage - The message typed by the user.
+   * @returns {Promise<{reply: string}>} - A promise that resolves to the bot's reply.
+   */
+  const sendMessageToAPI = async (userMessage) => {
+    // Check if the user object exists before trying to access its email property
+    if (!user || !user.email) {
+      console.error('User email not found. Cannot send message.');
+      return { reply: 'Authentication error. Please log in again.' };
+    }
+      
     try {
-      const response = await fetch('http://localhost:3000/message/sendmessage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          email: user.email,
-          conversationId: conversationId
-        }),
+      // Using axios to make the API call
+      const response = await axios.post('http://localhost:3000/messages/sendmessage', {
+        email: user.email, // This will now be the email from localStorage
+        query: userMessage,
       });
-      if (!response.ok) throw new Error('API response was not ok');
-      const data = await response.json();
+      const data = response.data;
       return {
         reply: data.reply || "Sorry, I couldn't process that.",
-        conversationId: data.conversationId
       };
     } catch (error) {
       console.error('API Error:', error);
-      return { reply: "I'm having trouble connecting. Please try again.", conversationId };
+      // Provide a simulated response on error to allow UI to function without a live backend
+      return { reply: `I'm having trouble connecting.` };
     }
   };
 
+  /**
+   * Processes the user's message, sends it to the API, and displays the response.
+   * @param {string} userMessage - The message to process.
+   */
   const processUserMessage = async (userMessage) => {
     setIsLoading(true);
     const newUserMessage = { id: Date.now(), text: userMessage, isBot: false, timestamp: new Date() };
     setMessages(prev => [...prev, newUserMessage]);
 
-    const apiResponse = await sendMessageToAPI(userMessage, currentChatId);
+    const apiResponse = await sendMessageToAPI(userMessage);
     const botResponseText = apiResponse.reply;
-    const conversationId = apiResponse.conversationId;
 
     const newBotMessage = { id: Date.now() + 1, text: botResponseText, isBot: true, timestamp: new Date() };
     setMessages(prev => [...prev, newBotMessage]);
 
-    if (!currentChatId) {
-      const newChat = {
-        id: conversationId,
-        name: formatConversationName(new Date().toISOString()),
-        lastMessage: botResponseText.slice(0, 40) + '...',
-        timestamp: Date.now()
-      };
-      setChatHistory(prev => [newChat, ...prev].slice(0, 5));
-      setCurrentChatId(conversationId);
-    } else {
-      setChatHistory(prev => prev.map(chat =>
-        chat.id === conversationId
-          ? { ...chat, lastMessage: botResponseText.slice(0, 40) + '...' }
-          : chat
-      ));
-    }
-
     setIsLoading(false);
   };
 
+  // Handles sending the message when the send button is clicked
   const handleSendMessage = () => {
     const messageToSend = inputMessage.trim();
     if (messageToSend && !isLoading) {
@@ -146,6 +103,7 @@ export default function Chats() {
     }
   };
 
+  // Handles sending the message on 'Enter' key press
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -153,39 +111,17 @@ export default function Chats() {
     }
   };
 
+  // Formats the timestamp for display
   const formatTime = (timestamp) => {
     return timestamp.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
 
+  // Clears the current chat to start a new one
   const handleNewChatClick = () => {
-    setCurrentChatId(null);
     setMessages([{ id: 1, text: "Hello! How can I help you today?", isBot: true, timestamp: new Date() }]);
   };
 
-  const handleChatHistoryClick = async (chat) => {
-    if (!user?.email || !chat.id) return;
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:3000/messages/conversation/${chat.id}`);
-      if (response.ok) {
-        const conversationData = await response.json();
-        const fetchedMessages = conversationData.messages?.map((msg, index) => ({
-          id: msg.id || index,
-          text: msg.text,
-          isBot: msg.sender === 'bot',
-          timestamp: new Date(msg.timestamp)
-        })) || [];
-        setMessages(fetchedMessages.length > 0 ? fetchedMessages : []);
-        setCurrentChatId(chat.id);
-      }
-    } catch (error) {
-      console.error('Error fetching conversation:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Navigation and logout handlers
   const handleDashboardClick = () => navigate('/dashboard');
   const handleProfileClick = () => navigate('/profile');
   const handleLogoutClick = () => setShowLogoutModal(true);
@@ -213,7 +149,7 @@ export default function Chats() {
         {isSidebarOpen && (
           <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div style={{ marginBottom: '30px' }}>
-              <h2 style={{ fontSize: '22px', fontWeight: '600' }}>Chat History</h2>
+              <h2 style={{ fontSize: '22px', fontWeight: '600' }}>Agri Bot</h2>
             </div>
 
             <button onClick={handleNewChatClick} style={{
@@ -243,30 +179,6 @@ export default function Chats() {
               </div>
               New Chat
             </button>
-
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px', paddingBottom: '5px', borderBottom: '1px solid white' }}>Recent Chats</h3>
-              {chatHistory.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', fontSize: '16px', marginTop: '20px' }}>No recent chats</div>
-              ) : (
-                chatHistory.map((chat) => (
-                  <button key={chat.id} onClick={() => handleChatHistoryClick(chat)} style={{
-                    width: '100%',
-                    padding: '10px',
-                    marginBottom: '8px',
-                    background: currentChatId === chat.id ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.2s'
-                  }}>
-                    <div style={{ fontWeight: '500', fontSize: '14px' }}>{chat.name}</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{chat.lastMessage}</div>
-                  </button>
-                ))
-              )}
-            </div>
 
             <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
               <button
@@ -410,3 +322,5 @@ const sidebarNavButtonStyle = {
   color: 'white',
   transition: 'background-color 0.2s, transform 0.2s'
 };
+
+export default Chats;
