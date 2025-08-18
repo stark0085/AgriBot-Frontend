@@ -325,9 +325,6 @@ const LoginForm = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         // margin: '0 auto 30px auto',
       }}>
         <div style={{

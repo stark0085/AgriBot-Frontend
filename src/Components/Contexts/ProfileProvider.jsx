@@ -1,9 +1,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import axios from 'axios'; // Import axios
 import i18n from '../../Multilingual/i18n'; // Make sure this path is correct
 
-// Create the context
-export const ProfileContext = createContext();
+// Step 1: Create and export the context so other components can use it
+export const ProfileContext = createContext(null);
 
 const languageMap = {
   en: 'English',
@@ -15,9 +16,9 @@ const ProfileProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  // STATE MUST USE THE TWO-LETTER CODE
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [selectedLanguage, setSelectedLanguage] = useState('en'); // Use two-letter language codes
 
+  // On initial load, check local storage for user data, token, and language
   useEffect(() => {
     const checkAuthStatus = () => {
       try {
@@ -32,12 +33,14 @@ const ProfileProvider = ({ children }) => {
 
         if (savedLanguage) {
           setSelectedLanguage(savedLanguage);
-          // THIS LINE SETS THE LANGUAGE ON APP START
-          i18n.changeLanguage(savedLanguage);
+          i18n.changeLanguage(savedLanguage); // Set language on app start
         }
       } catch (error) {
-        console.error('Error checking auth status:', error);
-        localStorage.clear();
+        console.error('Error parsing data from localStorage:', error);
+        // Clear potentially corrupted data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('selectedLanguage');
       } finally {
         setLoading(false);
       }
@@ -45,6 +48,78 @@ const ProfileProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  //  Logs the user in using axios
+  const login = async (credentials) => {
+    try {
+      const response = await axios.post('http://localhost:3000/auth/signin', credentials);
+      const data = response.data; // axios wraps the response in a `data` object
+
+      if (data.code === 0) {
+        const userData = {
+          email: credentials.email,
+          state: data.state,
+          district: data.district
+        };
+
+        setUser(userData);
+        setIsLoggedIn(true);
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userData', JSON.stringify(userData));
+        return { code: 0, message: 'Login successful' };
+      } else {
+        return {
+          code: 1,
+          message: data.message || 'Login failed. Please check your credentials.'
+        };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        code: 1,
+        message: error.response?.data?.message || 'Network error. Please try again.'
+      };
+    }
+  };
+
+  // Signs the user up using axios
+  const signup = async (userData) => {
+    try {
+      const response = await axios.post('http://localhost:3000/auth/signup', userData);
+      const data = response.data;
+
+      if (data.code === 0) {
+        return { code: 0, message: 'Account created successfully' };
+      } else {
+        return { code: 1, message: data.message || 'Signup failed.' };
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      return {
+        code: 1,
+        message: error.response?.data?.message || 'Network error. Please try again.'
+      };
+    }
+  };
+
+  // Logs the user out
+  const logout = () => {
+    setUser(null);
+    setIsLoggedIn(false);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    // We keep the language selection even after logout
+    toast.success('Logged out successfully');
+  };
+
+  // Updates user profile information locally
+  const updateProfile = (updatedData) => {
+    const newUserData = { ...user, ...updatedData };
+    setUser(newUserData);
+    localStorage.setItem('userData', JSON.stringify(newUserData));
+    return { success: true };
+  };
+
+  // Updates the application language
   const updateLanguage = (languageCode) => {
     setSelectedLanguage(languageCode);
     localStorage.setItem('selectedLanguage', languageCode);
@@ -59,88 +134,7 @@ const ProfileProvider = ({ children }) => {
     });
   };
 
-  // Example login function (replace with your actual API logic)
-  const login = async (credentials) => {
-    try {
-      // Replace with your actual API call
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-      const data = await response.json();
-
-      if (data.code === 0) {
-        const userData = {
-          email: credentials.email,
-          state: data.state,
-          district: data.district,
-        };
-        setUser(userData);
-        setIsLoggedIn(true);
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userData', JSON.stringify(userData));
-        return { code: 0, message: 'Login successful' };
-      } else {
-        return {
-          code: 1,
-          message: data.message || 'Login failed. Please check your credentials.',
-        };
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      return {
-        code: 1,
-        message: 'Network error. Please check your connection and try again.',
-      };
-    }
-  };
-
-  // Example signup function (replace with your actual API logic)
-  const signup = async (userData) => {
-    try {
-      // Replace with your actual API call
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-  // (Removed duplicate updateLanguage function)
-        code: 1,
-        message: 'Network error. Please check your connection and try again.',
-      };
-    }
-  };
-
-  // Logs the user out by clearing state and local storage.
-  const logout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    // Keep language selection even after logout
-    toast.success('Logged out successfully');
-  };
-
-  /**
-   * Updates the user's profile information in state and local storage.
-   */
-  const updateProfile = (updatedData) => {
-    // Note: This is a local update. For persistence, you'd also need a backend endpoint.
-    const newUserData = { ...user, ...updatedData };
-    setUser(newUserData);
-    localStorage.setItem('userData', JSON.stringify(newUserData));
-    // Assuming the update is always successful locally
-    return { success: true };
-  };
-
-  // (Removed duplicate updateLanguage function)
-
-  // Your original login, logout, etc. functions are unchanged
-  // const login = async (credentials) => { /* ...your existing code... */ };
-  // const logout = () => { /* ...your existing code... */ };
-  // const updateProfile = (updatedData) => { /* ...your existing code... */ };
-  // const signup = async (userData) => { /* ...your existing code... */ };
-
+  // The value object provided to all consumer components
   const value = {
     user,
     isLoggedIn,

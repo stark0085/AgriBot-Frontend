@@ -336,54 +336,14 @@ const ProfilePage = () => {
             </div>
             
             {/* Chat History Section */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', margin: '0 0 15px 0', opacity: '0.9', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>Recent Chats</h3>
-              
-              {demoChats.map((chat) => (
-                <button
-                  key={chat.id}
-                  onClick={() => handleChatHistoryClick(chat)}
-                  style={{ 
-                    width: '100%',
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    padding: '15px', 
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)', 
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '10px',
-                    color: 'white',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    textAlign: 'left',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                  }}
-                >
-                  <div style={{ fontWeight: '600', marginBottom: '6px', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>{chat.name}</div>
-                  <div style={{ fontSize: '12px', opacity: '0.8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
-                    {chat.lastMessage}
-                  </div>
-                </button>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', margin: '0 0 15px 0', opacity: '0.9', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>Navigation</h3>
             </div>
             
             {/* Separator Line */}
             <div style={{ 
               height: '1px', 
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)', 
-              margin: '25px 0'
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)'
             }}></div>
             
             {/* Navigation Buttons */}

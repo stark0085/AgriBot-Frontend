@@ -977,54 +977,6 @@ export default function Dashboard() {
             </div>
             <div style={styles.menuContent}>
               <div style={styles.menuSection}>
-                <div style={styles.sectionTitle}>Recent Chats</div>
-                <button
-                  style={styles.menuButton}
-                  onMouseEnter={(e) => Object.assign(e.target.style, styles.menuButtonHover)}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = 'white';
-                    e.target.style.paddingLeft = '24px';
-                  }}
-                >
-                  <MessageCircle size={18} />
-                  <div>
-                    <div style={{ fontWeight: '600', fontSize: '15px' }}>Weather Discussion</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '2px' }}>Thanks for the weather info!</div>
-                  </div>
-                </button>
-                <button
-                  style={styles.menuButton}
-                  onMouseEnter={(e) => Object.assign(e.target.style, styles.menuButtonHover)}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = 'white';
-                    e.target.style.paddingLeft = '24px';
-                  }}
-                >
-                  <MessageCircle size={18} />
-                  <div>
-                    <div style={{ fontWeight: '600', fontSize: '15px' }}>Crop Advice</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '2px' }}>Perfect! I'll try that method.</div>
-                  </div>
-                </button>
-                <button
-                  style={styles.menuButton}
-                  onMouseEnter={(e) => Object.assign(e.target.style, styles.menuButtonHover)}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = 'white';
-                    e.target.style.paddingLeft = '24px';
-                  }}
-                >
-                  <MessageCircle size={18} />
-                  <div>
-                    <div style={{ fontWeight: '600', fontSize: '15px' }}>Fertilizer Planning</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '2px' }}>Great recommendations!</div>
-                  </div>
-                </button>
-              </div>
-              <div style={styles.menuSection}>
                 <div style={styles.sectionTitle}>Navigation</div>
                 <button
                   style={styles.menuButton}
