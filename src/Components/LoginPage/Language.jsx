@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ProfileContext } from '../Contexts/ProfileProvider';
+import { Toaster } from 'react-hot-toast';
 
 const LanguageGridSelector = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const { selectedLanguage, updateLanguage } = useContext(ProfileContext);
+  const [tempSelectedLanguage, setTempSelectedLanguage] = useState('English');
   const navigate = useNavigate();
+
+  // Initialize with saved language from context
+  useEffect(() => {
+    if (selectedLanguage) {
+      setTempSelectedLanguage(selectedLanguage);
+    }
+  }, [selectedLanguage]);
 
   const languages = [
     { code: 'mai', name: 'Maithili', label: 'मैथिली' },
@@ -32,7 +42,15 @@ const LanguageGridSelector = () => {
   ];
 
   const handleSelect = (lang) => {
-    setSelectedLanguage(lang.name);
+    setTempSelectedLanguage(lang.name);
+  };
+
+  const handleContinue = () => {
+    // Save the selected language to context and localStorage
+    updateLanguage(tempSelectedLanguage);
+    
+    // Navigate based on your app flow - you might want to go to login or dashboard
+    navigate('/login');
   };
 
   return (
@@ -45,19 +63,32 @@ const LanguageGridSelector = () => {
       justifyContent: 'center',
       padding: '24px'
     }}>
+      {/* Toast Container */}
+      <Toaster />
+      
       <div style={{ width: '100%', maxWidth: '600px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{
             fontSize: '30px',
             fontWeight: '600',
             color: '#374151',
-            marginBottom: '32px'
+            marginBottom: '8px'
           }}>
             Select your language
           </h1>
           
+          {/* Show current saved language if different from temp selection */}
+          {selectedLanguage && selectedLanguage !== tempSelectedLanguage && (
+            <p style={{
+              fontSize: '14px',
+              color: '#6b7280',
+              marginBottom: '24px'
+            }}>
+              Currently saved: <span style={{ fontWeight: '500', color: '#16a34a' }}>{selectedLanguage}</span>
+            </p>
+          )}
+          
           <div style={{
-            
             borderRadius: '8px',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
             border: '1px solid #e5e7eb',
@@ -79,10 +110,10 @@ const LanguageGridSelector = () => {
                     style={{
                       padding: '16px',
                       borderRadius: '8px',
-                      border: 'none',
+                      border: tempSelectedLanguage === lang.name ? '2px solid #16a34a' : '1px solid #e5e7eb',
                       outline: 'none',
-                      backgroundColor: selectedLanguage === lang.name ? '#eff6ff' : 'white',
-                      color: selectedLanguage === lang.name ? '#1d4ed8' : '#374151',
+                      backgroundColor: tempSelectedLanguage === lang.name ? '#f0fdf4' : 'white',
+                      color: tempSelectedLanguage === lang.name ? '#16a34a' : '#374151',
                       textAlign: 'center',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
@@ -96,13 +127,15 @@ const LanguageGridSelector = () => {
                       fontVariantLigatures: 'none'
                     }}
                     onMouseEnter={(e) => {
-                      if (selectedLanguage !== lang.name) {
+                      if (tempSelectedLanguage !== lang.name) {
                         e.target.style.backgroundColor = '#f9fafb';
+                        e.target.style.borderColor = '#d1d5db';
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (selectedLanguage !== lang.name) {
+                      if (tempSelectedLanguage !== lang.name) {
                         e.target.style.backgroundColor = 'white';
+                        e.target.style.borderColor = '#e5e7eb';
                       }
                     }}
                   >
@@ -119,7 +152,7 @@ const LanguageGridSelector = () => {
                     </div>
                     <div style={{
                       fontSize: '14px',
-                      color: '#6b7280',
+                      color: tempSelectedLanguage === lang.name ? '#16a34a' : '#6b7280',
                       background: 'transparent',
                       backgroundColor: 'transparent',
                       textRendering: 'optimizeLegibility',
@@ -136,19 +169,20 @@ const LanguageGridSelector = () => {
           <div style={{
             marginTop: '24px',
             padding: '16px',
-            backgroundColor: '#eff6ff',
+            backgroundColor: '#f0fdf4',
             borderRadius: '8px',
-            border: '1px solid #bfdbfe'
+            border: '1px solid #bbf7d0'
           }}>
-            <p style={{ color: '#1e40af' }}>
+            <p style={{ color: '#16a34a', margin: 0 }}>
               <span style={{ fontWeight: '500' }}>Selected: </span>
-              <span style={{ color: '#2563eb' }}>{selectedLanguage}</span>
+              <span style={{ color: '#15803d', fontWeight: '600' }}>{tempSelectedLanguage}</span>
             </p>
           </div>
         </div>
 
         <div style={{ textAlign: 'center' }}>
           <button
+            onClick={handleContinue}
             style={{
               backgroundColor: '#16a34a',
               color: 'white',
@@ -157,13 +191,22 @@ const LanguageGridSelector = () => {
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
-              transition: 'background-color 0.2s'
+              transition: 'all 0.2s',
+              fontSize: '16px',
+              boxShadow: '0 2px 8px rgba(22, 163, 74, 0.3)'
             }}
-            onMouseEnter={e => e.target.style.backgroundColor = '#15803d'}
-            onMouseLeave={e => e.target.style.backgroundColor = '#16a34a'}
-            onClick={() => navigate('/login')} // Redirect to login page
+            onMouseEnter={e => {
+              e.target.style.backgroundColor = '#15803d';
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 12px rgba(22, 163, 74, 0.4)';
+            }}
+            onMouseLeave={e => {
+              e.target.style.backgroundColor = '#16a34a';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 8px rgba(22, 163, 74, 0.3)';
+            }}
           >
-            Continue
+            Continue with {tempSelectedLanguage}
           </button>
         </div>
       </div>

@@ -285,7 +285,7 @@ export default function Chats() {
               }}>
                 <MessageCircle size={18} />
               </div>
-              <span style={{ fontSize: '16px', fontWeight: '600', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>Current Chat</span>
+              <span style={{ fontSize: '16px', fontWeight: '600', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>New Chat</span>
             </div>
             
             {/* Chat History Section */}

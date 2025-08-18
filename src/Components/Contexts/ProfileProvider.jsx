@@ -8,24 +8,32 @@ const ProfileProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedLanguage, setSelectedLanguage] = useState('English'); // Add language state
 
-  // On initial load, check local storage for user data and token
+  // On initial load, check local storage for user data, token, and language
   useEffect(() => {
     const checkAuthStatus = () => {
       try {
         const token = localStorage.getItem('authToken');
         const userData = localStorage.getItem('userData');
+        const savedLanguage = localStorage.getItem('selectedLanguage');
 
         if (token && userData) {
           const parsedUserData = JSON.parse(userData);
           setUser(parsedUserData);
           setIsLoggedIn(true);
         }
+
+        // Load saved language or default to English
+        if (savedLanguage) {
+          setSelectedLanguage(savedLanguage);
+        }
       } catch (error) {
         console.error('Error checking auth status:', error);
         // Clear potentially corrupted data
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
+        localStorage.removeItem('selectedLanguage');
       } finally {
         setLoading(false);
       }
@@ -85,6 +93,7 @@ const ProfileProvider = ({ children }) => {
     setIsLoggedIn(false);
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
+    // Keep language selection even after logout
     toast.success('Logged out successfully');
   };
 
@@ -98,6 +107,27 @@ const ProfileProvider = ({ children }) => {
     localStorage.setItem('userData', JSON.stringify(newUserData));
     // Assuming the update is always successful locally
     return { success: true };
+  };
+
+  /**
+   * Updates the selected language in state and local storage.
+   */
+  const updateLanguage = (language) => {
+    setSelectedLanguage(language);
+    localStorage.setItem('selectedLanguage', language);
+    
+    toast.success(`Language changed to ${language}`, {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        background: '#10b981',
+        color: '#fff',
+        fontWeight: '600',
+        borderRadius: '12px',
+        boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)'
+      },
+      icon: '🌐',
+    });
   };
   
   const signup = async (userData) => {
@@ -125,10 +155,12 @@ const ProfileProvider = ({ children }) => {
     user,
     isLoggedIn,
     loading,
+    selectedLanguage,    // Add to context value
     login,
     signup,
     logout,
-    updateProfile
+    updateProfile,
+    updateLanguage       // Add to context value
   };
 
   return (

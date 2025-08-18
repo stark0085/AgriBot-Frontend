@@ -3,12 +3,7 @@ import { Menu, User, MessageCircle, X, LayoutDashboard, UserCircle, LogOut } fro
 import { useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import districtsAndCitiesByState from './Data';
-
-// Mock functions for demonstration
-const toast = {
-  success: (message) => console.log(`Success: ${message}`),
-  error: (message) => console.log(`Error: ${message}`),
-};
+import toast, { Toaster } from 'react-hot-toast';
 
 const ProfilePage = () => {
   const { user, updateProfile, loading, logout } = useContext(ProfileContext);
@@ -22,6 +17,7 @@ const ProfilePage = () => {
   const [errors, setErrors] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false); // Add loading state for API call
 
   // Demo chat history data
   const demoChats = [
@@ -72,15 +68,83 @@ const ProfilePage = () => {
     setErrors({});
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      const result = updateProfile(tempData);
-      if (result.success) {
-        toast.success('Profile updated successfully!');
+  // Updated handleSave function with API integration
+  const handleSave = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsUpdating(true);
+    
+    try {
+      const response = await fetch('http://localhost:3000/auth/updateLocation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          state: tempData.state,
+          district: tempData.district
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.code === 0) {
+        // Success - update the local user context if you have that functionality
+        if (updateProfile) {
+          updateProfile({
+            state: data.state,
+            district: data.district
+          });
+        }
+        
+        toast.success('Profile updated successfully! 🎉', {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#10b981',
+            color: '#fff',
+            fontWeight: '600',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)'
+          },
+          icon: '✅',
+        });
         setEditMode(false);
       } else {
-        toast.error('Error updating profile: ' + result.error);
+        // Handle API errors
+        const errorMessage = data.message || 'Failed to update profile';
+        toast.error(errorMessage, {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#ef4444',
+            color: '#fff',
+            fontWeight: '600',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)'
+          },
+          icon: '❌',
+        });
       }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Network error. Please check your connection and try again.', {
+        duration: 5000,
+        position: 'top-center',
+        style: {
+          background: '#f97316',
+          color: '#fff',
+          fontWeight: '600',
+          borderRadius: '12px',
+          boxShadow: '0 10px 25px rgba(249, 115, 22, 0.3)'
+        },
+        icon: '⚠️',
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -94,7 +158,7 @@ const ProfilePage = () => {
   };
 
   const handleLanguageChange = () => {
-    navigate('/');
+    navigate('/language');  // Navigate to language selection page
   };
 
   // Handle navigation
@@ -219,6 +283,9 @@ const ProfilePage = () => {
 
   return (
     <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f0fdf4', fontFamily: 'system-ui, sans-serif' }}>
+      {/* Toast Container */}
+      <Toaster />
+      
       {/* Sidebar */}
       <div style={sidebarStyle}>
         {isSidebarOpen && (
@@ -521,6 +588,7 @@ const ProfilePage = () => {
                       value={tempData.state}
                       onChange={handleInputChange}
                       style={inputStyle}
+                      disabled={isUpdating}
                     >
                       <option value="" disabled>Select your state</option>
                       {indianStatesAndUTs.map(state => (
@@ -538,8 +606,8 @@ const ProfilePage = () => {
                       name="district"
                       value={tempData.district}
                       onChange={handleInputChange}
-                      disabled={!tempData.state}
-                      style={{...inputStyle, cursor: !tempData.state ? 'not-allowed' : 'pointer'}}
+                      disabled={!tempData.state || isUpdating}
+                      style={{...inputStyle, cursor: (!tempData.state || isUpdating) ? 'not-allowed' : 'pointer'}}
                     >
                       <option value="" disabled>Select your district</option>
                       {availableDistricts.map(district => (
@@ -558,23 +626,43 @@ const ProfilePage = () => {
                 <>
                   <button
                     onClick={handleCancel}
+                    disabled={isUpdating}
                     style={{
                       ...buttonBaseStyle,
-                      backgroundColor: '#e5e7eb',
-                      color: '#4b5563'
+                      backgroundColor: isUpdating ? '#d1d5db' : '#e5e7eb',
+                      color: isUpdating ? '#9ca3af' : '#4b5563',
+                      cursor: isUpdating ? 'not-allowed' : 'pointer',
+                      opacity: isUpdating ? 0.7 : 1
                     }}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
+                    disabled={isUpdating}
                     style={{
                       ...buttonBaseStyle,
-                      backgroundColor: '#22c55e',
-                      color: 'white'
+                      backgroundColor: isUpdating ? '#16a34a' : '#22c55e',
+                      color: 'white',
+                      cursor: isUpdating ? 'not-allowed' : 'pointer',
+                      opacity: isUpdating ? 0.7 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
                     }}
                   >
-                    Save Changes
+                    {isUpdating && (
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid transparent',
+                        borderTop: '2px solid white',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
+                    )}
+                    {isUpdating ? 'Updating...' : 'Save Changes'}
                   </button>
                 </>
               ) : (
