@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import toast from 'react-hot-toast';
 import HappyFarmerImage from '../../assets/HappyFarmer.png';
+import districtsAndCitiesByState from '../Profile/Data';
 
 // List of Indian states for the dropdown
 const indianStates = [
@@ -35,14 +36,32 @@ const SignUpForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Get districts for the selected state
+  const getDistrictsForState = (stateName) => {
+    if (!stateName || !districtsAndCitiesByState[stateName]) {
+      return [];
+    }
+    return districtsAndCitiesByState[stateName].districts || [];
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
     
-    // Clear error when user starts typing
+    // If state is changed, reset district
+    if (name === 'state') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        district: '' // Reset district when state changes
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Clear error when user starts typing/selecting
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -334,12 +353,11 @@ const SignUpForm = () => {
                 }}>
                   District <span style={{ color: '#ef4444' }}>*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   name="district"
                   value={formData.district}
                   onChange={handleInputChange}
-                  placeholder="Enter your district"
+                  disabled={!formData.state}
                   style={{
                     width: '100%',
                     height: '48px',
@@ -348,24 +366,33 @@ const SignUpForm = () => {
                     borderRadius: '8px',
                     fontSize: '15px',
                     outline: 'none',
-                    backgroundColor: '#fff',
+                    backgroundColor: !formData.state ? '#f9fafb' : '#fff',
                     boxSizing: 'border-box',
+                    cursor: !formData.state ? 'not-allowed' : 'pointer',
                     transition: 'border-color 0.2s, box-shadow 0.2s',
-                    boxShadow: errors.district ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none'
+                    boxShadow: errors.district ? '0 0 0 3px rgba(239, 68, 68, 0.1)' : 'none',
+                    color: !formData.state ? '#9ca3af' : '#374151'
                   }}
                   onFocus={(e) => {
-                    if (!errors.district) {
+                    if (!errors.district && formData.state) {
                       e.target.style.borderColor = '#4ade80';
                       e.target.style.boxShadow = '0 0 0 3px rgba(74, 222, 128, 0.1)';
                     }
                   }}
                   onBlur={(e) => {
-                    if (!errors.district) {
+                    if (!errors.district && formData.state) {
                       e.target.style.borderColor = '#e5e7eb';
                       e.target.style.boxShadow = 'none';
                     }
                   }}
-                />
+                >
+                  <option value="">
+                    {!formData.state ? 'Select State First' : 'Select District'}
+                  </option>
+                  {getDistrictsForState(formData.state).map(district => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
+                </select>
                 {errors.district && (
                   <p style={{ color: '#ef4444', fontSize: '13px', margin: '4px 0 0 0' }}>
                     {errors.district}

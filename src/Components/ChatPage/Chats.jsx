@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Menu, Send, User, MessageCircle, X, Loader, LayoutDashboard, UserCircle, LogOut } from 'lucide-react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Add this import
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // Import the real context from your provider file
-// Note: Adjust the path ('../Contexts/ProfileProvider') to match your project structure.
 import { ProfileContext } from '../Contexts/ProfileProvider';
 
 function Chats() {
@@ -21,9 +20,8 @@ function Chats() {
 
   // Refs and hooks for navigation and context
   const messagesEndRef = useRef(null);
-  // Mocking useNavigate and useLocation as they require a Router context
-  const navigate = useNavigate(); // Use the real navigate hook
-  const location = { state: {} }; 
+  const navigate = useNavigate();
+  const location = useLocation();
   
   // This now correctly uses the user data from your real ProfileProvider
   const { logout, user } = useContext(ProfileContext); 
@@ -48,7 +46,6 @@ function Chats() {
 
   /**
    * Sends the user's message to the backend API using axios.
-   * This version does not include conversationId.
    * @param {string} userMessage - The message typed by the user.
    * @returns {Promise<{reply: string}>} - A promise that resolves to the bot's reply.
    */
@@ -60,19 +57,61 @@ function Chats() {
     }
       
     try {
-      // Using axios to make the API call
-      const response = await axios.post('http://localhost:3000/messages/sendmessage', {
-        email: user.email, // This will now be the email from localStorage
-        query: userMessage,
-      });
+      console.log('Sending message to API:', userMessage);
+      
+      // Using axios to make the API call with timeout and better configuration
+      const response = await axios.post('http://localhost:3000/messages/sendmessage', 
+        {
+          email: user.email,
+          query: userMessage,
+        },
+        {
+          timeout: 30000, // 30 second timeout
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      console.log('API response data:', response.data);
+      
       const data = response.data;
+      
+      // Better response validation
+      if (!data) {
+        console.error('Empty response data');
+        return { reply: 'Received empty response from server.' };
+      }
+      
+      if (!data.reply) {
+        console.error('No reply field in response:', data);
+        return { reply: 'Server response missing reply field.' };
+      }
+      
       return {
-        reply: data.reply || "Sorry, I couldn't process that.",
+        reply: data.reply,
       };
     } catch (error) {
       console.error('API Error:', error);
-      // Provide a simulated response on error to allow UI to function without a live backend
-      return { reply: `I'm having trouble connecting.` };
+      
+      // More detailed error handling
+      if (error.code === 'ECONNABORTED') {
+        console.error('Request timeout');
+        return { reply: 'Request timed out. Please try again.' };
+      } else if (error.response) {
+        // Server responded with error status
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+        const errorMessage = error.response.data?.message || error.response.data?.error || 'Server error';
+        return { reply: `API Error (${error.response.status}): ${errorMessage}` };
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('No response received:', error.request);
+        return { reply: 'No response from server. Please check if the server is running and try again.' };
+      } else {
+        // Something else happened
+        console.error('Request setup error:', error.message);
+        return { reply: `Request error: ${error.message}` };
+      }
     }
   };
 
@@ -81,17 +120,46 @@ function Chats() {
    * @param {string} userMessage - The message to process.
    */
   const processUserMessage = async (userMessage) => {
+    if (!userMessage || !userMessage.trim()) {
+      console.warn('Empty message received, skipping processing');
+      return;
+    }
     setIsLoading(true);
-    const newUserMessage = { id: Date.now(), text: userMessage, isBot: false, timestamp: new Date() };
+    
+    // Add user message to chat
+    const newUserMessage = { 
+      id: Date.now(), 
+      text: userMessage.trim(), 
+      isBot: false, 
+      timestamp: new Date() 
+    };
     setMessages(prev => [...prev, newUserMessage]);
 
-    const apiResponse = await sendMessageToAPI(userMessage);
-    const botResponseText = apiResponse.reply;
-
-    const newBotMessage = { id: Date.now() + 1, text: botResponseText, isBot: true, timestamp: new Date() };
-    setMessages(prev => [...prev, newBotMessage]);
-
-    setIsLoading(false);
+    try {
+      // Send to API and get response
+      const apiResponse = await sendMessageToAPI(userMessage.trim());
+      const botResponseText = apiResponse.reply;
+      // Add bot response to chat
+      const newBotMessage = { 
+        id: Date.now() + 1, 
+        text: botResponseText, 
+        isBot: true, 
+        timestamp: new Date() 
+      };
+      setMessages(prev => [...prev, newBotMessage]);
+    } catch (error) {
+      console.error('Error processing message:', error);
+      // Add error message to chat
+      const errorMessage = { 
+        id: Date.now() + 1, 
+        text: 'Sorry, I encountered an error processing your message. Please try again.', 
+        isBot: true, 
+        timestamp: new Date() 
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handles sending the message when the send button is clicked
@@ -119,6 +187,8 @@ function Chats() {
   // Clears the current chat to start a new one
   const handleNewChatClick = () => {
     setMessages([{ id: 1, text: "Hello! How can I help you today?", isBot: true, timestamp: new Date() }]);
+    // Reset the initial message processed flag
+    initialMessageProcessed.current = false;
   };
 
   // Navigation and logout handlers
