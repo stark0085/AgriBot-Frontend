@@ -1,0 +1,360 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+i18n
+  // Detect user language
+  .use(LanguageDetector)
+  // Pass the i18n instance to react-i18next.
+  .use(initReactI18next)
+  // Initialize i18next
+  .init({
+    debug: true,
+    fallbackLng: 'en', // Use 'en' if detected language is not available
+    interpolation: {
+      escapeValue: false, // React already safes from xss
+    },
+    resources: {
+      en: {
+        translation: {
+          // Main Dashboard Page
+          welcomeMessage: 'Welcome to AgriBot',
+          calculatorTitle: 'Calculator',
+          calculatorDescription: 'Calculate your crop price',
+          calculatorButton: 'Calculate',
+          krishiRakshakTitle: 'Krishi Rakshak',
+          krishiRakshakDescription: 'Report grievances and crop loss',
+          krishiRakshakButton: 'Visit Portal',
+          weatherForecastTitle: 'Weather Forecast',
+          weatherForecastDescription: 'Get weather updates for your area',
+          weatherForecastButton: 'View Weather',
+          cropInsightsTitle: 'Crop Insights',
+          cropInsightsDescription: 'Get personalized crop advice',
+          cropInsightsButton: 'Get Advice',
+          askExamplesTitle: 'Few examples to ask!',
+          moreExamples: '▼ More Examples',
+          lessExamples: '▼ Less Examples',
+          categoryYield: 'Increased Crop Yield',
+          categoryServices: 'Improved Government Services',
+          categoryQuality: 'Improved Quality',
+          categoryFinance: 'Finance and Business',
+          messagePlaceholder: 'Type your message here...',
+
+          // Sidebar Menu
+          menuTitle: 'AgriBot Menu',
+          recentChats: 'Recent Chats',
+          navigation: 'Navigation',
+          startNewChat: 'Start New Chat',
+          profileSettings: 'Profile Settings',
+          languageSettings: 'Language Settings',
+          logout: 'Logout',
+
+          // Calculator Modal
+          cropPricePredictor: 'Crop Price Predictor',
+          cropInfo: 'Crop Information *',
+          cropNamePlaceholder: 'Crop Name (e.g., wheat, rice, cotton)',
+          areaPlaceholder: 'Area in acres (e.g., 5)',
+          districtPlaceholder: 'District (e.g., Amritsar, Pune)',
+          calculatePrice: 'Calculate Price',
+          annualPremiumAmount: 'Annual Premium Amount',
+          sumInsured: 'Sum Insured:',
+          premiumRate: 'Premium Rate:',
+          premiumDisclaimer: '*This is an estimated calculation. Actual premium may vary based on additional factors.',
+          fillDetailsToCalculate: 'Fill all details above to calculate your crop price',
+          fillRequiredFieldsError: '* Please fill all required fields to calculate price',
+
+          // Crop Info Modal
+          cropInfoForm: 'Crop Information Form',
+          basicInfo: '1. Basic Information *',
+          cropPlaceholder: 'Crop (e.g., wheat)',
+          selectCropStage: 'Select crop stage *',
+          stageSowing: 'Sowing',
+          stageVegetative: 'Vegetative',
+          stageFlowering: 'Flowering',
+          stageFruiting: 'Fruiting',
+          stageHarvest: 'Harvest',
+          selectSoilType: 'Select soil type *',
+          soilClay: 'Clay',
+          soilSandy: 'Sandy',
+          soilLoamy: 'Loamy',
+          soilAlluvial: 'Alluvial',
+          farmSizePlaceholder: 'Farm size (e.g., 2 acres)',
+          soilTestReport: '2. Soil Test Report (Optional, but recommended)',
+          nitrogenLabel: 'Nitrogen (N) kg/ha',
+          phosphorusLabel: 'Phosphorus (P) kg/ha',
+          potassiumLabel: 'Potassium (K) kg/ha',
+          phLabel: 'Soil pH',
+          ocLabel: 'Organic Carbon (OC) %',
+          getIrrigationInsights: 'Get Irrigation Insights',
+          getFertilizerInsights: 'Get Fertilizer Insights',
+          fillSection1Error: '* Please fill all fields in Section 1 to get insights',
+
+          // Insights Modals (Irrigation/Fertilizer)
+          irrigationInsightsTitle: '🌾 Irrigation Insights',
+          fertilizerInsightsTitle: '🧪 Fertilizer Insights',
+          farmProfileTitle: '🌱 Your Farm Profile',
+          irrigationStrategyTitle: '💧 Recommended Irrigation Strategy',
+          keyRecommendationsTitle: '🎯 Key Recommendations',
+          nutrientStrategyTitle: '🌿 Recommended Nutrient Strategy',
+          getDetailedAdvice: 'Get Detailed Expert Advice',
+          getFertilizerPlan: 'Get Detailed Fertilizer Plan',
+
+          // Weather Modals
+          threeDayForecast: '3-Day Weather Forecast',
+          loading: 'Loading...',
+          view24HourForecast: 'View 24-Hour Detailed Forecast',
+          twentyFourHourForecast: '24-Hour Weather Forecast',
+
+          // Logout Modal
+          confirmLogoutTitle: 'Confirm Logout',
+          confirmLogoutMessage: "Are you sure you want to log out? You'll need to sign in again to access your account.",
+          cancel: 'Cancel',
+          yesLogout: 'Yes, Log Out',
+          
+          // Example Questions
+          questionImproveSoil: "How to improve soil condition?",
+          questionPestCabbage: "What are the most effective methods for pest control on cabbage?",
+          questionPlantOkra: "What is the best time to plant okra in north india?",
+          questionPestMango: "What are the most effective methods for pest control on mango tree?",
+          questionYieldCashew: "I am a farmer in Goa and I grow Cashew. What is the best way to increase my crop yield?",
+          questionWaterChili: "How much water should I give my chili?",
+          questionPestPaddy: "How can I prevent pests and diseases in my paddy?",
+          questionSubsidyAnimal: "Which is the latest subsidy for Animal husbandry by Government?",
+          questionPMKissan: "Can you provide more detail about PM Kissan Samman Yojna?",
+          questionGoaBenefits: "What kind of benefits does Goa state provide to farmers?",
+          questionImproveFertility: "How can I improve the fertility of my soil?",
+          questionHarvestCotton: "How can I harvest my cotton at the right time?",
+          questionImproveTurmeric: "How can I improve the quality of my turmeric?",
+          questionTractorLoan: "Is there any tractor loan scheme in Goa for farmers?"
+        }
+      },
+      hi: {
+        translation: {
+          // Main Dashboard Page
+          welcomeMessage: 'एग्रीबॉट में आपका स्वागत है',
+          calculatorTitle: 'कैलकुलेटर',
+          calculatorDescription: 'अपनी फसल की कीमत की गणना करें',
+          calculatorButton: 'गणना करें',
+          krishiRakshakTitle: 'कृषि रक्षक',
+          krishiRakshakDescription: 'शिकायतों और फसल के नुकसान की रिपोर्ट करें',
+          krishiRakshakButton: 'पोर्टल पर जाएं',
+          weatherForecastTitle: 'मौसम पूर्वानुमान',
+          weatherForecastDescription: 'अपने क्षेत्र के लिए मौसम की जानकारी पाएं',
+          weatherForecastButton: 'मौसम देखें',
+          cropInsightsTitle: 'फसल जानकारी',
+          cropInsightsDescription: 'व्यक्तिगत फसल सलाह प्राप्त करें',
+          cropInsightsButton: 'सलाह लें',
+          askExamplesTitle: 'पूछने के लिए कुछ उदाहरण!',
+          moreExamples: '▼ और उदाहरण',
+          lessExamples: '▼ कम उदाहरण',
+          categoryYield: 'बढ़ी हुई फसल उपज',
+          categoryServices: 'बेहतर सरकारी सेवाएं',
+          categoryQuality: 'सुधरी हुई गुणवत्ता',
+          categoryFinance: 'वित्त और व्यवसाय',
+          messagePlaceholder: 'अपना संदेश यहां लिखें...',
+
+          // Sidebar Menu
+          menuTitle: 'एग्रीबॉट मेनू',
+          recentChats: 'हाल की बातचीत',
+          navigation: 'नेविगेशन',
+          startNewChat: 'नई चैट शुरू करें',
+          profileSettings: 'प्रोफ़ाइल सेटिंग्स',
+          languageSettings: 'भाषा सेटिंग्स',
+          logout: 'लॉग आउट',
+
+          // Calculator Modal
+          cropPricePredictor: 'फसल मूल्य अनुमानक',
+          cropInfo: 'फसल की जानकारी *',
+          cropNamePlaceholder: 'फसल का नाम (उदा. गेहूं, चावल, कपास)',
+          areaPlaceholder: 'एकड़ में क्षेत्र (उदा. 5)',
+          districtPlaceholder: 'जिला (उदा. अमृतसर, पुणे)',
+          calculatePrice: 'कीमत की गणना करें',
+          annualPremiumAmount: 'वार्षिक प्रीमियम राशि',
+          sumInsured: 'बीमित राशि:',
+          premiumRate: 'प्रीमियम दर:',
+          premiumDisclaimer: '*यह एक अनुमानित गणना है। वास्तविक प्रीमियम अतिरिक्त कारकों के आधार पर भिन्न हो सकता है।',
+          fillDetailsToCalculate: 'अपनी फसल की कीमत की गणना के लिए ऊपर सभी विवरण भरें',
+          fillRequiredFieldsError: '* कृपया कीमत की गणना के लिए सभी आवश्यक फ़ील्ड भरें',
+
+          // Crop Info Modal
+          cropInfoForm: 'फसल सूचना प्रपत्र',
+          basicInfo: '१. सामान्य जानकारी *',
+          cropPlaceholder: 'फसल (उदा. गेहूं)',
+          selectCropStage: 'फसल का चरण चुनें *',
+          stageSowing: 'बुवाई',
+          stageVegetative: 'वानस्पतिक',
+          stageFlowering: 'फूल आना',
+          stageFruiting: 'फल लगना',
+          stageHarvest: 'कटाई',
+          selectSoilType: 'मिट्टी का प्रकार चुनें *',
+          soilClay: 'चिकनी मिट्टी',
+          soilSandy: 'रेतीली',
+          soilLoamy: 'दोमट',
+          soilAlluvial: 'जलोढ़',
+          farmSizePlaceholder: 'खेत का आकार (उदा. 2 एकड़)',
+          soilTestReport: '२. मिट्टी परीक्षण रिपोर्ट (वैकल्पिक, लेकिन अनुशंसित)',
+          nitrogenLabel: 'नाइट्रोजन (N) किग्रा/हेक्टेयर',
+          phosphorusLabel: 'फॉस्फोरस (P) किग्रा/हेक्टेयर',
+          potassiumLabel: 'पोटेशियम (K) किग्रा/हेक्टेयर',
+          phLabel: 'मिट्टी का पीएच',
+          ocLabel: 'ऑर्गेनिक कार्बन (OC) %',
+          getIrrigationInsights: 'सिंचाई संबंधी जानकारी प्राप्त करें',
+          getFertilizerInsights: 'उर्वरक संबंधी जानकारी प्राप्त करें',
+          fillSection1Error: '* जानकारी प्राप्त करने के लिए कृपया खंड 1 में सभी फ़ील्ड भरें',
+          
+          // Insights Modals (Irrigation/Fertilizer)
+          irrigationInsightsTitle: '🌾 सिंचाई संबंधी जानकारी',
+          fertilizerInsightsTitle: '🧪 उर्वरक संबंधी जानकारी',
+          farmProfileTitle: '🌱 आपका फार्म प्रोफाइल',
+          irrigationStrategyTitle: '💧 अनुशंसित सिंचाई रणनीति',
+          keyRecommendationsTitle: '🎯 मुख्य सिफारिशें',
+          nutrientStrategyTitle: '🌿 अनुशंसित पोषक तत्व रणनीति',
+          getDetailedAdvice: 'विस्तृत विशेषज्ञ सलाह प्राप्त करें',
+          getFertilizerPlan: 'विस्तृत उर्वरक योजना प्राप्त करें',
+
+          // Weather Modals
+          threeDayForecast: '3-दिन का मौसम पूर्वानुमान',
+          loading: 'लोड हो रहा है...',
+          view24HourForecast: '24-घंटे का विस्तृत पूर्वानुमान देखें',
+          twentyFourHourForecast: '24-घंटे का मौसम पूर्वानुमान',
+
+          // Logout Modal
+          confirmLogoutTitle: 'लॉगआउट की पुष्टि करें',
+          confirmLogoutMessage: 'क्या आप वाकई लॉग आउट करना चाहते हैं? आपको अपने खाते तक पहुंचने के लिए फिर से साइन इन करना होगा।',
+          cancel: 'रद्द करें',
+          yesLogout: 'हाँ, लॉग आउट करें',
+          
+          // Example Questions
+          questionImproveSoil: "मिट्टी की स्थिति कैसे सुधारें?",
+          questionPestCabbage: "पत्तागोभी पर कीट नियंत्रण के सबसे प्रभावी तरीके क्या हैं?",
+          questionPlantOkra: "उत्तर भारत में भिंडी लगाने का सबसे अच्छा समय क्या है?",
+          questionPestMango: "आम के पेड़ पर कीट नियंत्रण के सबसे प्रभावी तरीके क्या हैं?",
+          questionYieldCashew: "मैं गोवा में एक किसान हूँ और काजू उगाता हूँ। अपनी फसल की उपज बढ़ाने का सबसे अच्छा तरीका क्या है?",
+          questionWaterChili: "मुझे अपनी मिर्च को कितना पानी देना चाहिए?",
+          questionPestPaddy: "मैं अपने धान में कीटों और बीमारियों को कैसे रोक सकता हूँ?",
+          questionSubsidyAnimal: "सरकार द्वारा पशुपालन के लिए नवीनतम सब्सिडी कौन सी है?",
+          questionPMKissan: "क्या आप पीएम किसान सम्मान योजना के बारे में अधिक जानकारी दे सकते हैं?",
+          questionGoaBenefits: "गोवा राज्य किसानों को किस तरह के लाभ प्रदान करता है?",
+          questionImproveFertility: "मैं अपनी मिट्टी की उर्वरता कैसे सुधार सकता हूँ?",
+          questionHarvestCotton: "मैं सही समय पर अपनी कपास की कटाई कैसे कर सकता हूँ?",
+          questionImproveTurmeric: "मैं अपनी हल्दी की गुणवत्ता कैसे सुधार सकता हूँ?",
+          questionTractorLoan: "क्या गोवा में किसानों के लिए कोई ट्रैक्टर ऋण योजना है?"
+        }
+      },
+      ta: {
+        translation: {
+          // Main Dashboard Page
+          welcomeMessage: 'அக்ரிபாட்டிற்கு வரவேற்கிறோம்',
+          calculatorTitle: 'கால்குலேட்டர்',
+          calculatorDescription: 'உங்கள் பயிர் விலையைக் கணக்கிடுங்கள்',
+          calculatorButton: 'கணக்கிடு',
+          krishiRakshakTitle: 'கிருஷி ரக்ஷக்',
+          krishiRakshakDescription: 'குறைகள் மற்றும் பயிர் இழப்பைப் புகாரளிக்கவும்',
+          krishiRakshakButton: 'போர்ட்டலைப் பார்வையிடவும்',
+          weatherForecastTitle: 'வானிலை முன்னறிவிப்பு',
+          weatherForecastDescription: 'உங்கள் பகுதிக்கான வானிலை அறிவிப்புகளைப் பெறுங்கள்',
+          weatherForecastButton: 'வானிலையைப் பார்க்கவும்',
+          cropInsightsTitle: 'பயிர் நுண்ணறிவு',
+          cropInsightsDescription: 'தனிப்பயனாக்கப்பட்ட பயிர் ஆலோசனையைப் பெறுங்கள்',
+          cropInsightsButton: 'ஆலோசனை பெறவும்',
+          askExamplesTitle: 'கேட்க சில உதாரணங்கள்!',
+          moreExamples: '▼ மேலும் உதாரணங்கள்',
+          lessExamples: '▼ குறைவான உதாரணங்கள்',
+          categoryYield: 'அதிகரித்த பயிர் விளைச்சல்',
+          categoryServices: 'மேம்படுத்தப்பட்ட அரசாங்க சேவைகள்',
+          categoryQuality: 'மேம்பட்ட தரம்',
+          categoryFinance: 'நிதி மற்றும் வணிகம்',
+          messagePlaceholder: 'உங்கள் செய்தியை இங்கே தட்டச்சு செய்க...',
+
+          // Sidebar Menu
+          menuTitle: 'அக்ரிபாட் மெனு',
+          recentChats: 'சமீபத்திய உரையாடல்கள்',
+          navigation: 'வழிசெலுத்தல்',
+          startNewChat: 'புதிய அரட்டையைத் தொடங்கு',
+          profileSettings: 'சுயவிவர அமைப்புகள்',
+          languageSettings: 'மொழி அமைப்புகள்',
+          logout: 'வெளியேறு',
+
+          // Calculator Modal
+          cropPricePredictor: 'பயிர் விலை கணிப்பான்',
+          cropInfo: 'பயிர் தகவல் *',
+          cropNamePlaceholder: 'பயிரின் பெயர் (எ.கா. கோதுமை, அரிசி, பருத்தி)',
+          areaPlaceholder: 'ஏக்கரில் பரப்பளவு (எ.கா. 5)',
+          districtPlaceholder: 'மாவட்டம் (எ.கா. அமிர்தசரஸ், புனே)',
+          calculatePrice: 'விலையைக் கணக்கிடு',
+          annualPremiumAmount: 'ஆண்டு பிரீமியம் தொகை',
+          sumInsured: 'காப்பீட்டுத் தொகை:',
+          premiumRate: 'பிரீமியம் விகிதம்:',
+          premiumDisclaimer: '*இது ஒரு மதிப்பிடப்பட்ட கணக்கீடு. கூடுதல் காரணிகளின் அடிப்படையில் உண்மையான பிரீமியம் மாறுபடலாம்.',
+          fillDetailsToCalculate: 'உங்கள் பயிர் விலையைக் கணக்கிட மேலே உள்ள அனைத்து விவரங்களையும் நிரப்பவும்',
+          fillRequiredFieldsError: '* விலையைக் கணக்கிட தேவையான அனைத்து புலங்களையும் நிரப்பவும்',
+
+          // Crop Info Modal
+          cropInfoForm: 'பயிர் தகவல் படிவம்',
+          basicInfo: '1. அடிப்படைத் தகவல் *',
+          cropPlaceholder: 'பயிர் (எ.கா. கோதுமை)',
+          selectCropStage: 'பயிர் நிலையைத் தேர்ந்தெடுக்கவும் *',
+          stageSowing: 'விதைப்பு',
+          stageVegetative: 'தாவர வளர்ச்சி',
+          stageFlowering: 'பூக்கும் பருவம்',
+          stageFruiting: 'காய்க்கும் பருவம்',
+          stageHarvest: 'அறுவடை',
+          selectSoilType: 'மண் வகையைத் தேர்ந்தெடுக்கவும் *',
+          soilClay: 'களிமண்',
+          soilSandy: 'மணல்',
+          soilLoamy: 'வண்டல் மண்',
+          soilAlluvial: 'வண்டல்',
+          farmSizePlaceholder: 'பண்ணை அளவு (எ.கா. 2 ஏக்கர்)',
+          soilTestReport: '2. மண் பரிசோதனை அறிக்கை (விருப்பத்தேர்வு, ஆனால் பரிந்துரைக்கப்படுகிறது)',
+          nitrogenLabel: 'நைட்ரஜன் (N) கி/ஹெக்டேர்',
+          phosphorusLabel: 'பாஸ்பரஸ் (P) கி/ஹெக்டேர்',
+          potassiumLabel: 'பொட்டாசியம் (K) கி/ஹெக்டேர்',
+          phLabel: 'மண்ணின் pH',
+          ocLabel: 'கரிம கார்பன் (OC) %',
+          getIrrigationInsights: 'நீர்ப்பாசன நுண்ணறிவுகளைப் பெறுங்கள்',
+          getFertilizerInsights: 'உர நுண்ணறிவுகளைப் பெறுங்கள்',
+          fillSection1Error: '* நுண்ணறிவுகளைப் பெற, பிரிவு 1 இல் உள்ள அனைத்து புலங்களையும் நிரப்பவும்',
+
+          // Insights Modals (Irrigation/Fertilizer)
+          irrigationInsightsTitle: '🌾 நீர்ப்பாசன நுண்ணறிவு',
+          fertilizerInsightsTitle: '🧪 உர நுண்ணறிவு',
+          farmProfileTitle: '🌱 உங்கள் பண்ணை சுயவிவரம்',
+          irrigationStrategyTitle: '💧 பரிந்துரைக்கப்பட்ட நீர்ப்பாசன உத்தி',
+          keyRecommendationsTitle: '🎯 முக்கிய பரிந்துரைகள்',
+          nutrientStrategyTitle: '🌿 பரிந்துரைக்கப்பட்ட ஊட்டச்சத்து உத்தி',
+          getDetailedAdvice: 'விரிவான நிபுணர் ஆலோசனையைப் பெறுங்கள்',
+          getFertilizerPlan: 'விரிவான உரத் திட்டத்தைப் பெறுங்கள்',
+
+          // Weather Modals
+          threeDayForecast: '3-நாள் வானிலை முன்னறிவிப்பு',
+          loading: 'ஏற்றுகிறது...',
+          view24HourForecast: '24-மணிநேர விரிவான முன்னறிவிப்பைக் காண்க',
+          twentyFourHourForecast: '24-மணிநேர வானிலை முன்னறிவிப்பு',
+
+          // Logout Modal
+          confirmLogoutTitle: 'வெளியேறுவதை உறுதிப்படுத்தவும்',
+          confirmLogoutMessage: 'நீங்கள் நிச்சயமாக வெளியேற விரும்புகிறீர்களா? உங்கள் கணக்கை அணுக மீண்டும் உள்நுழைய வேண்டும்.',
+          cancel: 'ரத்துசெய்',
+          yesLogout: 'ஆம், வெளியேறு',
+          
+          // Example Questions
+          questionImproveSoil: "மண்ணின் நிலையை எவ்வாறு மேம்படுத்துவது?",
+          questionPestCabbage: "முட்டைக்கோசில் பூச்சி கட்டுப்பாட்டிற்கான மிகவும் பயனுள்ள முறைகள் யாவை?",
+          questionPlantOkra: "வட இந்தியாவில் வெண்டைக்காய் நடவு செய்ய சிறந்த நேரம் எது?",
+          questionPestMango: "மாமரத்தில் பூச்சி கட்டுப்பாட்டிற்கான மிகவும் பயனுள்ள முறைகள் யாவை?",
+          questionYieldCashew: "நான் கோவாவில் ஒரு விவசாயி மற்றும் முந்திரி வளர்க்கிறேன். எனது பயிர் விளைச்சலை அதிகரிக்க சிறந்த வழி என்ன?",
+          questionWaterChili: "எனது மிளகாய்க்கு எவ்வளவு தண்ணீர் கொடுக்க வேண்டும்?",
+          questionPestPaddy: "எனது நெற்பயிரில் பூச்சிகள் மற்றும் நோய்களை எவ்வாறு தடுப்பது?",
+          questionSubsidyAnimal: "கால்நடை வளர்ப்புக்கு அரசாங்கத்தின் சமீபத்திய மானியம் எது?",
+          questionPMKissan: "பிஎம் கிசான் சம்மன் யோஜனா பற்றி மேலும் விவரம் தர முடியுமா?",
+          questionGoaBenefits: "கோவா மாநிலம் விவசாயிகளுக்கு என்ன வகையான நன்மைகளை வழங்குகிறது?",
+          questionImproveFertility: "எனது மண்ணின் வளத்தை எவ்வாறு மேம்படுத்துவது?",
+          questionHarvestCotton: "சரியான நேரத்தில் எனது பருத்தியை எவ்வாறு அறுவடை செய்வது?",
+          questionImproveTurmeric: "எனது மஞ்சளின் தரத்தை எவ்வாறு மேம்படுத்துவது?",
+          questionTractorLoan: "கோவாவில் விவசாயிகளுக்கு டிராக்டர் கடன் திட்டம் ஏதேனும் உள்ளதா?"
+        }
+      }
+    }
+  });
+
+export default i18n;
