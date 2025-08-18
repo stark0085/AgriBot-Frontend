@@ -21,9 +21,9 @@ function App() {
         <div className="App">
           {/* React Hot Toast Container */}
           <Toaster 
-            position="top-right"
+            position="top-center"
             toastOptions={{
-              duration: 4000,
+              duration: 2000,
               style: {
                 background: '#fff',
                 color: '#333',
