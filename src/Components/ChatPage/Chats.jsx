@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Menu, Send, User, MessageCircle, X, Loader, LayoutDashboard, UserCircle, LogOut } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Add this import
+import { useTranslation } from 'react-i18next';
 
 // Import the real context from your provider file
 // Note: Adjust the path ('../Contexts/ProfileProvider') to match your project structure.
@@ -14,6 +15,7 @@ function Chats() {
   ]);
   
   // State for user input and UI controls
+  const { t } = useTranslation();
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -149,7 +151,7 @@ function Chats() {
         {isSidebarOpen && (
           <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div style={{ marginBottom: '30px' }}>
-              <h2 style={{ fontSize: '22px', fontWeight: '600' }}>Agri Bot</h2>
+              <h2 style={{ fontSize: '22px', fontWeight: '600' }}>{t('title')}</h2>
             </div>
 
             <button onClick={handleNewChatClick} style={{
@@ -177,7 +179,7 @@ function Chats() {
               }}>
                 <MessageCircle size={14} />
               </div>
-              New Chat
+              {t('newChat')}
             </button>
 
             <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
@@ -186,21 +188,21 @@ function Chats() {
                 style={{ ...sidebarNavButtonStyle, paddingTop: '1vh', borderTop: 'none', borderBottom: '2px solid', borderRight: '2px solid white' }}
                 onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                 onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
-              ><LayoutDashboard size={16} style={{ marginRight: '10px' }} />Dashboard</button>
+              ><LayoutDashboard size={16} style={{ marginRight: '10px' }} />{t('dashboard')}</button>
 
               <button
                 onClick={handleProfileClick}
                 style={{ ...sidebarNavButtonStyle, borderTop: 'none', borderBottom: '2px solid', borderRight: '2px solid white' }}
                 onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                 onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
-              ><UserCircle size={16} style={{ marginRight: '10px' }} />Profile</button>
+              ><UserCircle size={16} style={{ marginRight: '10px' }} />{t('myProfile')}</button>
 
               <button
                 onClick={handleLogoutClick}
                 style={{ ...sidebarNavButtonStyle, background: 'rgba(239, 68, 68, 0.2)', color: '#0c0606ff', borderRight: '2px solid red', borderBottom: '2px solid red' }}
                 onMouseOver={(e) => { e.currentTarget.style.background = '#B91C1C'; e.currentTarget.style.color = 'white'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                 onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.color = '#F87171'; e.currentTarget.style.transform = 'scale(1)'; }}
-              ><LogOut size={16} style={{ marginRight: '10px' }} />Logout</button>
+              ><LogOut size={16} style={{ marginRight: '10px' }} />{t('logout')}</button>
             </div>
           </div>
         )}
@@ -222,8 +224,8 @@ function Chats() {
               {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
             <div>
-              <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: '#111827' }}>Agri Bot</h1>
-              <p style={{ fontSize: '13px', color: '#6B7280', margin: 0 }}>Start a conversation</p>
+              <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: '#111827' }}>{t('title')}</h1>
+              <p style={{ fontSize: '13px', color: '#6B7280', margin: 0 }}>{t('subtitle')}</p>
             </div>
           </div>
           <button
@@ -269,7 +271,7 @@ function Chats() {
 
         <div style={{ padding: '16px 24px', backgroundColor: '#F5E6D3', borderTop: '2px solid white', marginLeft: '8vw', marginRight: '8vw' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px', background: '#FFFFFF', borderRadius: '12px', padding: '8px', border: '1px solid #E5E7EB' }}>
-            <textarea value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleKeyPress} placeholder="Type your message here..." disabled={isLoading} style={{ flex: 1, padding: '10px', border: 'none', background: 'transparent', resize: 'none', outline: 'none', fontSize: '14px', color: '#1F2937' }} rows={1} />
+            <textarea value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleKeyPress} placeholder={t('placeholder')}disabled={isLoading} style={{ flex: 1, padding: '10px', border: 'none', background: 'transparent', resize: 'none', outline: 'none', fontSize: '14px', color: '#1F2937' }} rows={1} />
             <button onClick={handleSendMessage} disabled={!inputMessage.trim() || isLoading} style={{
               width: '36px', height: '36px', borderRadius: '8px', border: 'none',
               background: (!inputMessage.trim() || isLoading) ? '#D1D5DB' : '#3B82F6',

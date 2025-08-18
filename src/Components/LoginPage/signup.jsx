@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import toast from 'react-hot-toast';
 import HappyFarmerImage from '../../assets/HappyFarmer.png';
+import { useTranslation } from 'react-i18next';
 
 // List of Indian states for the dropdown
 const indianStates = [
@@ -18,6 +19,7 @@ const indianStates = [
 ];
 
 const SignUpForm = () => {
+  const { t } = useTranslation();
   const { signup } = useContext(ProfileContext);
   const navigate = useNavigate();
   
@@ -149,7 +151,7 @@ const SignUpForm = () => {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }}>
-            Sign Up
+            {t('signUpLink')}
           </h1>
           
           {errors.submit && (
@@ -176,14 +178,14 @@ const SignUpForm = () => {
                 color: '#374151', 
                 marginBottom: '8px' 
               }}>
-                Full Name <span style={{ color: '#ef4444' }}>*</span>
+                {t('fullNameLabel')} <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
                 type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleInputChange}
-                placeholder="Enter your full name"
+                placeholder={t('fullNamePlaceholder')}
                 style={{
                   width: '100%',
                   height: '48px',
@@ -226,14 +228,14 @@ const SignUpForm = () => {
                 color: '#374151', 
                 marginBottom: '8px' 
               }}>
-                Email Address <span style={{ color: '#ef4444' }}>*</span>
+                {t('emailLabel')} <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter your email address"
+                placeholder={t('emailPlaceholder')}
                 style={{
                   width: '100%',
                   height: '48px',
@@ -278,7 +280,7 @@ const SignUpForm = () => {
                   color: '#374151', 
                   marginBottom: '8px' 
                 }}>
-                  State <span style={{ color: '#ef4444' }}>*</span>
+                  {t('stateLabel')} <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <select
                   name="state"
@@ -311,7 +313,7 @@ const SignUpForm = () => {
                     }
                   }}
                 >
-                  <option value="">Select State</option>
+                  <option value="">{t('selectState')}</option>
                   {indianStates.map(state => (
                     <option key={state} value={state}>{state}</option>
                   ))}
@@ -332,14 +334,14 @@ const SignUpForm = () => {
                   color: '#374151', 
                   marginBottom: '8px' 
                 }}>
-                  District <span style={{ color: '#ef4444' }}>*</span>
+                  {t('districtLabel')} <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
                   type="text"
                   name="district"
                   value={formData.district}
                   onChange={handleInputChange}
-                  placeholder="Enter your district"
+                  placeholder={t('districtPlaceholder')}
                   style={{
                     width: '100%',
                     height: '48px',
@@ -383,7 +385,7 @@ const SignUpForm = () => {
                 color: '#374151', 
                 marginBottom: '8px' 
               }}>
-                Password <span style={{ color: '#ef4444' }}>*</span>
+                {t('passwordLabel')} <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -391,7 +393,7 @@ const SignUpForm = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="Enter your password"
+                  placeholder={t('passwordPlaceholder')}
                   style={{
                     width: '100%',
                     height: '48px',
@@ -455,7 +457,7 @@ const SignUpForm = () => {
                 color: '#374151', 
                 marginBottom: '8px' 
               }}>
-                Confirm Password <span style={{ color: '#ef4444' }}>*</span>
+                {t('confirmPasswordLabel')} <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -463,7 +465,7 @@ const SignUpForm = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  placeholder="Confirm your password"
+                  placeholder={t('confirmPasswordPlaceholder')}
                   style={{
                     width: '100%',
                     height: '48px',
@@ -549,7 +551,7 @@ const SignUpForm = () => {
                 }
               }}
             >
-              {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+              {isSubmitting ? 'Creating Account...' : t('signUpLink')}
             </button>
 
             {/* Already have an account */}
@@ -559,7 +561,7 @@ const SignUpForm = () => {
                 color: '#6b7280',
                 margin: '0'
               }}>
-                Already have an account?{' '}
+                {t('hasAccount')}{' '}
                 <button
                   onClick={() => navigate('/login')}
                   style={{ 

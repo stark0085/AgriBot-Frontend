@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import districtsAndCitiesByState from './Data';
 import toast, { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const ProfilePage = () => {
   const { user, updateProfile, loading, logout } = useContext(ProfileContext);
   const navigate = useNavigate();
-
+  const { t } = useTranslation();
   const [editMode, setEditMode] = useState(false);
   const [tempData, setTempData] = useState({
     district: '',
@@ -332,7 +333,7 @@ const ProfilePage = () => {
               }}>
                 <UserCircle size={18} />
               </div>
-              <span style={{ fontSize: '16px', fontWeight: '600', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>My Profile</span>
+              <span style={{ fontSize: '16px', fontWeight: '600', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>{t('myProfile')}</span>
             </div>
             
             {/* Chat History Section */}
@@ -379,7 +380,7 @@ const ProfilePage = () => {
                 }}
               >
                 <LayoutDashboard size={18} style={{ marginRight: '12px' }} />
-                Dashboard
+                {t('dashboard')}
               </button>
               
               <button
@@ -413,7 +414,7 @@ const ProfilePage = () => {
                 }}
               >
                 <MessageCircle size={18} style={{ marginRight: '12px' }} />
-                Chat
+                {t('chat')}
               </button>
 
               <button
@@ -449,7 +450,7 @@ const ProfilePage = () => {
                 }}
               >
                 <LogOut size={18} style={{ marginRight: '12px' }} />
-                Logout
+                {t('logout')}
               </button>
             </div>
           </div>
@@ -511,7 +512,7 @@ const ProfilePage = () => {
               borderBottom: '1px solid #e5e7eb',
               paddingBottom: '20px'
             }}>
-              <h1 style={{ color: '#166534', fontSize: '36px', fontWeight: '800', margin: '0 0 8px 0' }}>My Profile</h1>
+              <h1 style={{ color: '#166534', fontSize: '36px', fontWeight: '800', margin: '0 0 8px 0' }}>{t('myProfile')}</h1>
               <p style={{ color: '#4b5563', fontSize: '16px', margin: '0' }}>View and manage your personal details.</p>
             </div>
             
@@ -519,7 +520,7 @@ const ProfilePage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Email field - non-editable */}
               <div>
-                <label style={labelStyle}>Email Address</label>
+                <label style={labelStyle}>{t('emailLabel')}</label>
                 <div style={{...inputStyle, backgroundColor: '#e5e7eb', color: '#4b5563', cursor: 'not-allowed'}}>
                   {user?.email || 'Loading...'}
                 </div>
@@ -529,11 +530,11 @@ const ProfilePage = () => {
               {!editMode ? (
                 <>
                   <div>
-                    <label style={labelStyle}>State</label>
+                    <label style={labelStyle}>{t('stateLabel')}</label>
                     <div style={inputStyle}>{user?.state || 'Not set'}</div>
                   </div>
                   <div>
-                    <label style={labelStyle}>District</label>
+                    <label style={labelStyle}>{t('districtLabel')}</label>
                     <div style={inputStyle}>{user?.district || 'Not set'}</div>
                   </div>
                 </>
@@ -637,7 +638,7 @@ const ProfilePage = () => {
                           border: '1px solid #166534'
                       }}
                   >
-                      Change Language
+                      {t('changeLanguageButton')}
                   </button>
                   <button
                     onClick={handleEdit}
@@ -647,7 +648,7 @@ const ProfilePage = () => {
                       color: 'white'
                     }}
                   >
-                    Edit Profile
+                    {t('editProfileButton')}
                   </button>
                 </>
               )}

@@ -1215,7 +1215,7 @@ export default function Dashboard() {
                   e.target.style.backgroundColor = '#22c55e';
                 }}
               >
-                {showMoreExamples ? '▼ Less Examples' : '▼ More Examples'}
+                {showMoreExamples ? t('lessExamples') : t('moreExamples')}
               </button>
             </div>
             {showMoreExamples && (
