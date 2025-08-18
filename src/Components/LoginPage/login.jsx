@@ -5,8 +5,10 @@ import { Eye, EyeOff } from 'lucide-react';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import toast from 'react-hot-toast';
 import yourImage from '../../assets/farmer_hand.png'; // Adjust the path to your image
+import { useTranslation } from 'react-i18next';
 
 const LoginForm = () => {
+  const { t } = useTranslation(); // <-- ADD THIS LINE
   const { login } = useContext(ProfileContext);
   const navigate = useNavigate();
 
@@ -115,7 +117,7 @@ const LoginForm = () => {
             color: '#000',
 
           }}>
-            Welcome back
+            {t('welcomeBack')}
           </h1>
           <h1 style={{
             fontSize: '18px',
@@ -124,7 +126,7 @@ const LoginForm = () => {
             marginBottom: '60px',
 
           }}>
-            Please enter your details
+            {t('enterDetails')}
           </h1>
 
           {errors.submit && (
@@ -150,7 +152,7 @@ const LoginForm = () => {
                 color: '#374151',
                 marginBottom: '8px'
               }}>
-                Email Address
+                {t('emailLabel')}
               </label>
               <input
                 type="email"
@@ -177,7 +179,7 @@ const LoginForm = () => {
                   e.target.style.borderColor = errors.email ? '#dc2626' : '#e5e7eb';
                   e.target.style.backgroundColor = '#f9fafb';
                 }}
-                placeholder="Enter your email"
+                placeholder={t('emailPlaceholder')}
               />
               {errors.email && (
                 <p style={{
@@ -199,7 +201,7 @@ const LoginForm = () => {
                 color: '#374151',
                 marginBottom: '8px'
               }}>
-                Password
+                {t('passwordLabel')}
               </label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -228,7 +230,7 @@ const LoginForm = () => {
                     e.target.style.borderColor = errors.password ? '#dc2626' : '#e5e7eb';
                     e.target.style.backgroundColor = '#f9fafb';
                   }}
-                  placeholder="Enter your password"
+                  placeholder={t('passwordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -283,13 +285,13 @@ const LoginForm = () => {
                 if (!isSubmitting) e.target.style.backgroundColor = '#22c55e';
               }}
             >
-              {isSubmitting ? 'Signing In...' : 'Sign In'}
+              {isSubmitting ? t('signingInButton') : t('signInButton')}
             </button>
 
             {/* Sign Up Link */}
             <div style={{ textAlign: 'center' }}>
               <span style={{ color: '#6b7280', fontSize: '16px' }}>
-                Don't have an account?{' '}
+               {t('noAccount')}{' '}
                 <button
                   onClick={() => navigate('/signup')}
                   style={{
@@ -305,7 +307,7 @@ const LoginForm = () => {
                   onMouseOver={e => e.target.style.textDecoration = 'underline'}
                   onMouseOut={e => e.target.style.textDecoration = 'none'}
                 >
-                  Sign up
+                  {t('signUpLink')}
                 </button>
               </span>
             </div>

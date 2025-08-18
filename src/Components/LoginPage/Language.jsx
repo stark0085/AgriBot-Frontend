@@ -3,9 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { ProfileContext } from '../Contexts/ProfileProvider';
 import { Toaster } from 'react-hot-toast';
 
+// --- Mocks to fix resolution errors ---
+// In a real application, you would import these from their respective files.
+
+// 1. Mock ProfileContext to resolve the import error
+// (Removed duplicate ProfileContext declaration)
+
+// 2. Mock useNavigate hook from react-router-dom
+
+// --- End Mocks ---
+
 const LanguageGridSelector = () => {
-  const { selectedLanguage, updateLanguage } = useContext(ProfileContext);
-  // STATE MUST USE THE TWO-LETTER CODE
+  const { selectedLanguage, updateLanguage, isLoggedIn } = useContext(ProfileContext);
   const [tempSelectedLanguage, setTempSelectedLanguage] = useState('en');
   const navigate = useNavigate();
 
@@ -19,26 +28,27 @@ const LanguageGridSelector = () => {
     { code: 'en', name: 'English', label: 'English' },
     { code: 'hi', name: 'Hindi', label: 'हिंदी' },
     { code: 'ta', name: 'Tamil', label: 'தமிழ்' },
-    // You can add your other languages back here
   ];
   
-  // Find the full name of the selected language for display purposes
   const selectedLangName = languages.find(lang => lang.code === tempSelectedLanguage)?.name || 'English';
 
   const handleSelect = (lang) => {
-    // This now correctly stores the code ('en', 'hi', etc.)
     setTempSelectedLanguage(lang.code);
   };
 
   const handleContinue = () => {
-    // This now correctly passes the code to the provider
     updateLanguage(tempSelectedLanguage);
-    navigate('/login');
+    setTimeout(() => {
+      if (isLoggedIn) {
+        navigate('/dashboard');
+      } else {
+        navigate('/login');
+      }
+    }, 2000);
   };
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor:'#F9F9EF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <Toaster />
       <div style={{ width: '100%', maxWidth: '600px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{ fontSize: '30px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
@@ -51,7 +61,6 @@ const LanguageGridSelector = () => {
                   <div
                     key={lang.code}
                     onClick={() => handleSelect(lang)}
-                    // THIS NOW CORRECTLY COMPARES CODES FOR HIGHLIGHTING
                     style={{ padding: '16px', borderRadius: '8px', border: tempSelectedLanguage === lang.code ? '2px solid #16a34a' : '1px solid #e5e7eb', backgroundColor: tempSelectedLanguage === lang.code ? '#f0fdf4' : 'white', color: tempSelectedLanguage === lang.code ? '#16a34a' : '#374151', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s', width: 'calc(50% - 6px)', boxSizing: 'border-box' }}
                   >
                     <div style={{ fontSize: '18px', fontWeight: '500', marginBottom: '4px' }}>{lang.label}</div>
