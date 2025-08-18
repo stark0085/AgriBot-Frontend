@@ -8,7 +8,10 @@ import weather from '../../assets/weather.png';
 import cropsbcg from '../../assets/cropsbcg.png';
 import insights from '../../assets/insights.png';
 
+import { useTranslation } from 'react-i18next';
+
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [setCurrentSchemeIndex] = useState(0);
@@ -960,7 +963,9 @@ export default function Dashboard() {
           <div style={styles.menuOverlay} onClick={toggleMenu} />
           <div style={styles.sideMenu}>
             <div style={styles.menuHeader}>
-              <h2 style={styles.menuTitle}>AgriBot Menu</h2>
+
+              <h2 style={styles.menuTitle}>{t('menuTitle')}</h2>
+
               <button
                 onClick={toggleMenu}
                 style={styles.closeButton}
@@ -1032,7 +1037,9 @@ export default function Dashboard() {
                   }}
                 >
                   <MessageCircle size={20} />
-                  Start New Chat
+
+                  {t('startNewChat')}
+
                 </button>
                 <button
                   style={styles.menuButton}
@@ -1045,7 +1052,9 @@ export default function Dashboard() {
                   }}
                 >
                   <User size={20} />
-                  Profile Settings
+
+                  {t('profileSettings')}
+
                 </button>
                 <button
                   style={styles.menuButton}
@@ -1058,7 +1067,9 @@ export default function Dashboard() {
                   }}
                 >
                   <Globe size={20} />
-                  Language Settings
+
+                  {t('languageSettings')}
+
                 </button>
               </div>
               <div style={styles.logoutSection}>
@@ -1072,7 +1083,9 @@ export default function Dashboard() {
                   }}
                 >
                   <LogOut size={20} />
-                  Logout
+
+                  {t('logout')}
+
                 </button>
               </div>
             </div>
@@ -1081,7 +1094,11 @@ export default function Dashboard() {
       )}
       <div style={styles.mainContent}>
         <div style={styles.contentWrapper}>
-          <h1 style={{ ...styles.title, marginBottom: '5vh' }}>Welcome to AgriBot</h1>
+
+          <h1 style={{ ...styles.title, marginBottom: '5vh' }}>{t('welcomeMessage')}</h1>
+
+
+
           <div style={styles.cardsSection}>
             <div
               style={{ ...styles.card, background: `url(${rupee})`, backgroundPosition: "center left", backgroundSize: "cover", color: "black" }}
@@ -1095,8 +1112,11 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={styles.cardContent}>
-                <h3 style={styles.cardTitle}>Calculator</h3>
-                <p style={styles.cardDescription}>Calculate your crop price</p>
+
+                <h3 style={styles.cardTitle}>{t('calculatorTitle')}</h3>
+
+                <p style={styles.cardDescription}>{t('calculatorDescription')}</p>
+
                 <button style={{ ...styles.cardButton, color: "black" }}>Calculate</button>
               </div>
             </div>
@@ -1112,8 +1132,11 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={styles.cardContent}>
-                <h3 style={styles.cardTitle}>Krishi Rakshak</h3>
-                <p style={styles.cardDescription}>Report grievances and crop loss</p>
+
+                <h3 style={styles.cardTitle}>{t('krishiRakshakTitle')}</h3>
+
+                <p style={styles.cardDescription}>{t('krishiRakshakDescription')}</p>
+
                 <button style={{ ...styles.cardButton, color: "black" }}>Visit Portal</button>
               </div>
             </div>
@@ -1129,8 +1152,11 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={styles.cardContent}>
-                <h3 style={styles.cardTitle}>Weather Forecast</h3>
-                <p style={styles.cardDescription}>Get weather updates for your area</p>
+
+                <h3 style={styles.cardTitle}>{t('weatherForecastTitle')}</h3>
+
+                <p style={styles.cardDescription}>{t('weatherForecastDescription')}</p>
+
                 <button style={{ ...styles.cardButton, color: "black" }}>View Weather</button>
               </div>
             </div>
@@ -1146,14 +1172,21 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={styles.cardContent}>
-                <h3 style={styles.cardTitle}>Crop Insights</h3>
-                <p style={styles.cardDescription}>Get personalized crop advice</p>
+
+                <h3 style={styles.cardTitle}>{t('cropInsightsTitle')}</h3>
+
+                <p style={styles.cardDescription}>{t('cropInsightsDescription')}</p>
+
                 <button style={{ ...styles.cardButton, color: 'black' }}>Get Advice</button>
               </div>
             </div>
           </div>
           <div style={styles.sampleQuestionsSection}>
-            <h1 style={{ ...styles.sectionTitleMain, color: 'black', marginBottom: '2vh' }}>Few examples to ask!</h1>
+
+            <h1 style={{ ...styles.sectionTitleMain, color: 'black', marginBottom: '2vh' }}>{t('askExamplesTitle')}</h1>
+
+
+
             <div style={styles.basicQuestionsGrid}>
               <div
                 style={styles.questionCard}
@@ -1167,7 +1200,9 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-                How to improve soil condition?
+
+               {t('questionImproveSoil')}
+
               </div>
               <div
                 style={styles.questionCard}
@@ -1181,7 +1216,8 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-                What are the most effective methods for pest control on cabbage?
+
+               {t('questionPestCabbage')}
               </div>
               <div
                 style={styles.questionCard}
@@ -1195,7 +1231,9 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-                What is the best time to plant okra in north india?
+
+                {t('questionPlantOkra')}
+
               </div>
               <div
                 style={styles.questionCard}
@@ -1209,7 +1247,9 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-                What are the most effective methods for pest control on mango tree?
+
+                {t('questionPestMango')}
+
               </div>
             </div>
             <div style={{ textAlign: 'center', margin: '12px 0' }}>
@@ -1229,12 +1269,16 @@ export default function Dashboard() {
             {showMoreExamples && (
               <div style={styles.categoriesContainer}>
                 <div style={styles.categorySection}>
-                  <h3 style={styles.categoryTitle}>Increased Crop Yield</h3>
+
+                  <h3 style={styles.categoryTitle}>{t('categoryYield')}</h3>
+
                   <div style={styles.categoryGrid}>
                     {[
-                      "I am a farmer in Goa and I grow Cashew. What is the best way to increase my crop yield?",
-                      "How much water should I give my chili?",
-                      "How can I prevent pests and diseases in my paddy?"
+
+                      t('questionYieldCashew'), // <-- Call the function directly
+                      t('questionWaterChili'),  // <-- Apply to all questions
+                      t('questionPestPaddy')  
+
                     ].map((question, index) => (
                       <div
                         key={index}
@@ -1255,12 +1299,67 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div style={styles.categorySection}>
-                  <h3 style={styles.categoryTitle}>Improved Government Services</h3>
+
+                  <h3 style={styles.categoryTitle}>{t('welcomeMessage')}</h3>
+
                   <div style={styles.categoryGrid}>
                     {[
-                      "Which is the latest subsidy for Animal husbandry by Government?",
-                      "Can you provide more detail about PM Kissan Samman Yojna?",
-                      "What kind of benefits does Goa state provide to farmers?"
+
+                     t('questionSubsidyAnimal'),
+                     t('questionPMKissan'),
+                     t('questionGoaBenefits')
+                    ].map((question, index) => (
+
+                      <div
+
+                        key={index}
+
+                        style={styles.questionCard}
+
+                        onClick={() => handleQuestionClick(question)}
+
+                        onMouseEnter={(e) => {
+
+                          e.target.style.transform = 'translateY(-3px)';
+
+                          e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.15)';
+
+                        }}
+
+                        onMouseLeave={(e) => {
+
+                          e.target.style.transform = 'translateY(0)';
+
+                          e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
+
+                        }}
+
+                      >
+
+                        {question}
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                </div>
+
+
+
+                <div style={styles.categorySection}>
+
+                  <h3 style={styles.categoryTitle}>{t('categoryServices')}</h3>
+
+                  <div style={styles.categoryGrid}>
+
+                    {[
+
+                       t('questionImproveFertility'),
+                       t('questionHarvestCotton'),
+                       t('questionImproveTurmeric')
+
                     ].map((question, index) => (
                       <div
                         key={index}
@@ -1281,37 +1380,15 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div style={styles.categorySection}>
-                  <h3 style={styles.categoryTitle}>Improved Quality</h3>
+
+                  <h3 style={styles.categoryTitle}>{t('categoryFinance')}</h3>
+
                   <div style={styles.categoryGrid}>
                     {[
-                      "How can I improve the fertility of my soil?",
-                      "How can I harvest my cotton at the right time?",
-                      "How can I improve the quality of my turmeric?"
-                    ].map((question, index) => (
-                      <div
-                        key={index}
-                        style={styles.questionCard}
-                        onClick={() => handleQuestionClick(question)}
-                        onMouseEnter={(e) => {
-                          e.target.style.transform = 'translateY(-3px)';
-                          e.target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.15)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
-                        }}
-                      >
-                        {question}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={styles.categorySection}>
-                  <h3 style={styles.categoryTitle}>Finance and Business</h3>
-                  <div style={styles.categoryGrid}>
-                    {[
-                      "Which is the latest subsidy for Animal husbandry by Government?",
-                      "Is there any tractor loan scheme in Goa for farmers?"
+
+                       t('questionSubsidyAnimal'),
+  t('questionTractorLoan')
+
                     ].map((question, index) => (
                       <div
                         key={index}
@@ -1790,7 +1867,7 @@ export default function Dashboard() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Type your message here..."
+            placeholder={t('messagePlaceholder')}
             style={styles.inputField}
             onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
             onBlur={(e) => e.target.style.borderColor = '#bfdbfe'}
