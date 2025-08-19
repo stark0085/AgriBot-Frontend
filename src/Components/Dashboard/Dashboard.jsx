@@ -239,7 +239,7 @@ export default function Dashboard() {
         year: 'numeric', month: 'long', day: 'numeric'
       });
 
-      const query = `Generate a comprehensive crop timeline and growing guide for ${cropTimelineInfo.cropName} in ${cropTimelineInfo.soilType} soil in ${userDistrict} district. Current date is ${currentDate}. Provide detailed month-wise activities, planting schedule, care instructions, harvest timing, and best practices for this crop in the given soil and location conditions.`;
+      const query = `Generate a practical cultivation guide and timeline for ${cropTimelineInfo.cropName} in ${cropTimelineInfo.soilType} soil, adapted for the general agro-climatic conditions of the ${userDistrict} region. Current date is ${currentDate}. Based on assumed average soil fertility and a balanced pH, provide a step-by-step plan covering soil preparation, nutrient and water management, pest control, and harvesting. Ensure you conclude with a disclaimer advising users to consult local agricultural experts for farm-specific recommendations.`;
 
       const payload = { email: userEmail, query: query };
 
