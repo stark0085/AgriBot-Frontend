@@ -119,8 +119,8 @@ const districtsAndCitiesByState = {
             'Chhindwara', 'Damoh', 'Datia', 'Dewas', 'Dhar', 'Dindori',
             'Guna', 'Gwalior', 'Harda', 'Narmadapuram', 'Indore', 'Jabalpur',
             'Jhabua', 'Katni', 'Khandwa', 'Khargone', 'Mandla', 'Mandsaur',
-            'Morena', 'Narsinghpur', 'Neemuch', 'Niwari', 'Panna', 'Raisen',
-            'Rajgarh', 'Ratlam', 'Rewa', 'Sagar', 'Satna', 'Sehore', 'Seoni',
+            'Morena', 'Narsinghpur', 'Neemuch', 'Niwari', 'Panna', 'Pandhurna',
+            'Raisen', 'Rajgarh', 'Ratlam', 'Rewa', 'Sagar', 'Satna', 'Sehore', 'Seoni',
             'Shahdol', 'Shajapur', 'Sheopur', 'Shivpuri', 'Sidhi',
             'Singrauli', 'Tikamgarh', 'Ujjain', 'Umaria', 'Vidisha'
         ]
@@ -219,7 +219,7 @@ const districtsAndCitiesByState = {
     },
     'Telangana': {
         districts: [
-            'Adilabad', 'Bhadradri Kothagu dem', 'Hanumakonda', 'Hyderabad',
+            'Adilabad', 'Bhadradri Kothagudem', 'Hanumakonda', 'Hyderabad',
             'Jagtial', 'Jangaon', 'Jayashankar Bhupalpally', 'Jogulamba Gadwal',
             'Kamareddy', 'Karimnagar', 'Khammam', 'Komaram Bheem',
             'Mahabubabad', 'Mahabubnagar', 'Mancherial', 'Medak',

@@ -9,6 +9,7 @@ import cropsbcg from '../../assets/cropsbcg.png';
 import insights from '../../assets/insights.png';
 
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -33,7 +34,6 @@ export default function Dashboard() {
   const [insuranceInfo, setInsuranceInfo] = useState({
     cropName: '',
     area: '',
-    location: ''
   });
   const [calculatedPremium, setCalculatedPremium] = useState(null);
 
@@ -53,7 +53,7 @@ export default function Dashboard() {
   });
 
   const navigate = useNavigate();
-  const { logout } = useContext(ProfileContext);
+  const { logout, user } = useContext(ProfileContext);
 
   // Agricultural schemes data
   const agriculturalSchemes = [
@@ -134,43 +134,100 @@ export default function Dashboard() {
   };
 
   // Insurance calculator functions
-  const handleCalculateInsurance = () => {
-    // Simple premium calculation logic (you can enhance this)
-    const baseRate = {
-      'wheat': 2.5,
-      'rice': 3.0,
-      'cotton': 3.5,
-      'sugarcane': 2.0,
-      'maize': 2.8,
-      'default': 2.5
-    };
-    const locationMultiplier = {
-      'punjab': 1.0,
-      'haryana': 1.1,
-      'uttar pradesh': 1.2,
-      'maharashtra': 1.3,
-      'karnataka': 1.1,
-      'default': 1.2
-    };
+  // Updated handleCalculateInsurance function to use backend API
+  // Updated handleCalculateInsurance function with price-only query
+  const handleCalculateInsurance = async () => {
+    try {
+      // Show loading state
+      setCalculatedPremium({ loading: true });
 
-    const crop = insuranceInfo.cropName.toLowerCase();
-    const location = insuranceInfo.location.toLowerCase();
-    const area = parseFloat(insuranceInfo.area);
-    const rate = baseRate[crop] || baseRate.default;
-    const multiplier = locationMultiplier[location] || locationMultiplier.default;
+      // Use user from outer scope (already from useContext)
+      const userEmail = user?.email;
+      const userDistrict = user?.district;
 
-    // Assuming average sum insured of ₹50,000 per acre
-    const sumInsuredPerAcre = 50000;
-    const totalSumInsured = sumInsuredPerAcre * area;
-    const premium = Math.round((totalSumInsured * rate * multiplier) / 100);
+      if (!userEmail) {
+        toast.error('User not logged in. Please log in to calculate crop price.');
+        return;
+      }
 
-    setCalculatedPremium({
-      premium: premium,
-      sumInsured: totalSumInsured,
-      rate: (rate * multiplier).toFixed(2)
-    });
+      // Create a focused query that asks only for price
+      const query = `Calculate the current market price for ${insuranceInfo.cropName} crop for ${insuranceInfo.area} acres in ${userDistrict} district. In your response only give what you think is the approximate selling prices and nothing else. Provide the price per quintal and total estimated value for the given area.`;
+
+      // Prepare payload for API
+      const payload = {
+        email: userEmail,
+        query: query
+      };
+
+      // Make API call to backend
+      const response = await fetch('https://agri-bot-backend-ba3f.vercel.app/messages/sendmessage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Include auth token if required
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('API Response:', data); // For debugging
+
+      // Extract the reply message from the response
+      const priceMessage = data.reply || data.response || data.message || 'Price analysis completed successfully.';
+
+      // Set the response from backend
+      setCalculatedPremium({
+        loading: false,
+        response: priceMessage,
+        cropName: insuranceInfo.cropName,
+        area: insuranceInfo.area,
+        district: userDistrict,
+        timestamp: new Date().toLocaleString(),
+        success: true
+      });
+
+      // Show success toast
+      toast.success('Crop price calculated!', {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#10b981',
+          color: '#fff',
+          fontWeight: '600',
+          borderRadius: '12px',
+          maxWidth: '400px'
+        },
+        icon: '💰',
+      });
+
+    } catch (error) {
+      console.error('Error calculating crop price:', error);
+
+      // Set error state
+      setCalculatedPremium({
+        loading: false,
+        error: 'Failed to get crop price. Please try again later.',
+        timestamp: new Date().toLocaleString(),
+        success: false
+      });
+
+      // Show error toast
+      toast.error('Failed to calculate crop price. Please check your connection and try again.', {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#ef4444',
+          color: '#fff',
+          fontWeight: '600',
+          borderRadius: '12px'
+        },
+      });
+    }
   };
-
   // Handlers for insights
   const handleIrrigationInsight = () => {
     setShowCropInfoModal(false);
@@ -240,7 +297,7 @@ export default function Dashboard() {
   const handleCancelLogout = () => setShowLogoutModal(false);
 
   const isFormComplete = cropInfo.cropType && cropInfo.cropStage && cropInfo.soilType && cropInfo.farmSize;
-  const isInsuranceFormComplete = insuranceInfo.cropName && insuranceInfo.area && insuranceInfo.location;
+  const isInsuranceFormComplete = insuranceInfo.cropName && insuranceInfo.area;
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleHourlyModal = () => setShowHourlyModal(!showHourlyModal);
@@ -766,7 +823,7 @@ export default function Dashboard() {
       marginBottom: '4px'
     },
     cropInfoContent: {
-      padding: '20px 0'
+      padding: '12px 0'
     },
     cropInfoSection: {
       marginBottom: '24px',
@@ -933,7 +990,7 @@ export default function Dashboard() {
   return (
     <div style={styles.container}>
       <div style={styles.bannerSection}>
-        <div style={{...styles.bannerContent}}>
+        <div style={{ ...styles.bannerContent }}>
           {[...agriculturalSchemes, ...agriculturalSchemes, ...agriculturalSchemes].map((scheme, index) => (
             <div
               key={index}
@@ -1153,7 +1210,7 @@ export default function Dashboard() {
                 }}
               >
 
-               {t('questionImproveSoil')}
+                {t('questionImproveSoil')}
 
               </div>
               <div
@@ -1169,7 +1226,7 @@ export default function Dashboard() {
                 }}
               >
 
-               {t('questionPestCabbage')}
+                {t('questionPestCabbage')}
               </div>
               <div
                 style={styles.questionCard}
@@ -1229,7 +1286,7 @@ export default function Dashboard() {
 
                       t('questionYieldCashew'), // <-- Call the function directly
                       t('questionWaterChili'),  // <-- Apply to all questions
-                      t('questionPestPaddy')  
+                      t('questionPestPaddy')
 
                     ].map((question, index) => (
                       <div
@@ -1257,9 +1314,9 @@ export default function Dashboard() {
                   <div style={styles.categoryGrid}>
                     {[
 
-                     t('questionSubsidyAnimal'),
-                     t('questionPMKissan'),
-                     t('questionGoaBenefits')
+                      t('questionSubsidyAnimal'),
+                      t('questionPMKissan'),
+                      t('questionGoaBenefits')
                     ].map((question, index) => (
 
                       <div
@@ -1308,9 +1365,9 @@ export default function Dashboard() {
 
                     {[
 
-                       t('questionImproveFertility'),
-                       t('questionHarvestCotton'),
-                       t('questionImproveTurmeric')
+                      t('questionImproveFertility'),
+                      t('questionHarvestCotton'),
+                      t('questionImproveTurmeric')
 
                     ].map((question, index) => (
                       <div
@@ -1338,8 +1395,8 @@ export default function Dashboard() {
                   <div style={styles.categoryGrid}>
                     {[
 
-                       t('questionSubsidyAnimal'),
-  t('questionTractorLoan')
+                      t('questionSubsidyAnimal'),
+                      t('questionTractorLoan')
 
                     ].map((question, index) => (
                       <div
@@ -1365,12 +1422,21 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-      {/* Updated Crop Price Predictor Modal */}
+      {/* Updated Crop Price Predictor Modal with proper scrolling */}
       {showCalculatorModal && (
         <div style={styles.modalOverlay} onClick={() => setShowCalculatorModal(false)}>
-          <div style={{ ...styles.modal, backgroundColor: '#d4d4ae' }} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={{
+              ...styles.modal,
+              backgroundColor: '#d4d4ae',
+              maxHeight: '85vh', // Limit height to ensure it fits on screen
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Crop Price Predictor</h2>
+              <h2 style={{ ...styles.modalTitle, marginBottom: '0px' }}>Crop Price Predictor</h2>
               <button
                 onClick={() => setShowCalculatorModal(false)}
                 style={styles.modalCloseButton}
@@ -1380,86 +1446,261 @@ export default function Dashboard() {
                 <X size={20} color="#6b7280" />
               </button>
             </div>
-            <div style={styles.cropInfoContent}>
-              <div style={styles.cropInfoSection}>
-                <div style={styles.cropInfoTitle}>Crop Information *</div>
-                <input
-                  type="text"
-                  placeholder="Crop Name (e.g., wheat, rice, cotton)"
-                  style={{ ...styles.cropInfoInput, marginBottom: '16px' }}
-                  value={insuranceInfo.cropName}
-                  onChange={(e) => setInsuranceInfo({ ...insuranceInfo, cropName: e.target.value })}
-                />
-                <input
-                  type="number"
-                  placeholder="Area in acres (e.g., 5)"
-                  style={{ ...styles.cropInfoInput, marginBottom: '16px' }}
-                  value={insuranceInfo.area}
-                  onChange={(e) => setInsuranceInfo({ ...insuranceInfo, area: e.target.value })}
-                />
-                <input
-                  type="text"
-                  placeholder="District (e.g., Amritsar, Pune)"
-                  style={styles.cropInfoInput}
-                  value={insuranceInfo.location}
-                  onChange={(e) => setInsuranceInfo({ ...insuranceInfo, location: e.target.value })}
-                />
+
+            {/* Scrollable content area */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '0 8px', // Small padding to prevent scrollbar from touching edges
+                margin: '0 -8px'   // Negative margin to compensate for padding
+              }}
+            >
+              <div style={styles.cropInfoContent}>
+                <div style={styles.cropInfoSection}>
+                  <div style={styles.cropInfoTitle}>Crop Information *</div>
+                  <input
+                    type="text"
+                    placeholder="Crop Name (e.g., potato, wheat, rice)"
+                    style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                    value={insuranceInfo.cropName}
+                    onChange={(e) => setInsuranceInfo({ ...insuranceInfo, cropName: e.target.value })}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Area of the farm in acres (e.g., 5)"
+                    style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                    value={insuranceInfo.area}
+                    onChange={(e) => setInsuranceInfo({ ...insuranceInfo, area: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Market Name (Mandi) in the city (eg - Koley Market or Posta Bazar in Kolkata)"
+                    style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Crop Variety: (e.g., Basmati, Hybrid for rice)"
+                    style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                  />
+                </div>
+
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <button
+                    style={{
+                      ...styles.calculateButton,
+                      ...(isInsuranceFormComplete ? {} : styles.calculateButtonDisabled)
+                    }}
+                    onClick={handleCalculateInsurance}
+                    disabled={!isInsuranceFormComplete}
+                    onMouseEnter={(e) => {
+                      if (isInsuranceFormComplete) {
+                        e.target.style.backgroundColor = '#2563eb';
+                        e.target.style.transform = 'translateY(-2px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (isInsuranceFormComplete) {
+                        e.target.style.backgroundColor = '#3b82f6';
+                        e.target.style.transform = 'translateY(0)';
+                      }
+                    }}
+                  >
+                    Calculate Price
+                  </button>
+                </div>
+                {/* Updated result display section */}
+                {calculatedPremium ? (
+                  <div style={styles.premiumResultBox}>
+                    {calculatedPremium.loading ? (
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                          fontSize: '16px',
+                          color: '#059669',
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
+                            border: '2px solid #059669',
+                            borderTop: '2px solid transparent',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite'
+                          }}></div>
+                          Calculating crop price...
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                          Getting latest market rates for {insuranceInfo.cropName}
+                        </div>
+                      </div>
+                    ) : calculatedPremium.error ? (
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                          fontSize: '18px',
+                          color: '#dc2626',
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          ❌ Error
+                        </div>
+                        <div style={{
+                          fontSize: '14px',
+                          color: '#6b7280',
+                          marginBottom: '16px',
+                          lineHeight: '1.5'
+                        }}>
+                          {calculatedPremium.error}
+                        </div>
+                        <button
+                          onClick={handleCalculateInsurance}
+                          style={{
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            padding: '10px 20px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#2563eb'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#3b82f6'}
+                        >
+                          Try Again
+                        </button>
+                      </div>
+                    ) : calculatedPremium.success ? (
+                      <div>
+                        <div style={{
+                          fontSize: '20px',
+                          fontWeight: 'bold',
+                          color: '#059669',
+                          marginBottom: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}>
+                          💰 Price Calculation Complete
+                        </div>
+
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '16px',
+                          marginBottom: '16px'
+                        }}>
+                          <div style={styles.premiumDetails}>
+                            <strong>Crop:</strong> {calculatedPremium.cropName}
+                          </div>
+                          <div style={styles.premiumDetails}>
+                            <strong>Area:</strong> {calculatedPremium.area} acres
+                          </div>
+                          <div style={styles.premiumDetails}>
+                            <strong>District:</strong> {calculatedPremium.district}
+                          </div>
+                          <div style={styles.premiumDetails}>
+                            <strong>Calculated:</strong> {calculatedPremium.timestamp.split(',')[1]}
+                          </div>
+                        </div>
+
+                        {/* Price display box with actual API response */}
+                        <div style={{
+                          backgroundColor: '#f0f9ff',
+                          padding: '20px',
+                          borderRadius: '12px',
+                          marginBottom: '16px',
+                          border: '2px solid #3b82f6',
+                          textAlign: 'center'
+                        }}>
+                          <div style={{
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            color: '#1e40af',
+                            marginBottom: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                          }}>
+                            📊 Market Price Information:
+                          </div>
+                          <div style={{
+                            fontSize: '15px',
+                            color: '#1f2937',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-wrap',
+                            textAlign: 'left',
+                            backgroundColor: 'white',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            border: '1px solid #e5e7eb',
+                            maxHeight: '200px',
+                            overflowY: 'auto'
+                          }}>
+                            {calculatedPremium.response}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setShowCalculatorModal(false);
+                            navigate('/chat', {
+                              state: {
+                                initialMessage: `I need detailed market analysis and selling strategies for ${calculatedPremium.cropName} in ${calculatedPremium.district}. Please provide current market trends, best selling practices, and price forecasts.`
+                              }
+                            });
+                          }}
+                          style={{
+                            backgroundColor: '#16a34a',
+                            color: 'white',
+                            padding: '14px 24px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#15803d';
+                            e.target.style.transform = 'translateY(-2px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#16a34a';
+                            e.target.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          💬 Get Detailed Market Analysis
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div style={styles.resultBox}>
+                    <p style={{ margin: 0, color: '#6b7280' }}>Fill crop name and area to get current market price</p>
+                  </div>
+                )}
+
+                {!isInsuranceFormComplete && (
+                  <div style={styles.requiredText}>
+                    * Please fill crop name and area to calculate price
+                  </div>
+                )}
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <button
-                  style={{
-                    ...styles.calculateButton,
-                    ...(isInsuranceFormComplete ? {} : styles.calculateButtonDisabled)
-                  }}
-                  onClick={handleCalculateInsurance}
-                  disabled={!isInsuranceFormComplete}
-                  onMouseEnter={(e) => {
-                    if (isInsuranceFormComplete) {
-                      e.target.style.backgroundColor = '#2563eb';
-                      e.target.style.transform = 'translateY(-2px)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (isInsuranceFormComplete) {
-                      e.target.style.backgroundColor = '#3b82f6';
-                      e.target.style.transform = 'translateY(0)';
-                    }
-                  }}
-                >
-                  Calculate Price
-                </button>
-              </div>
-              {calculatedPremium ? (
-                <div style={styles.premiumResultBox}>
-                  <div style={styles.premiumAmount}>
-                    ₹{calculatedPremium.premium.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: '18px', fontWeight: '600', color: '#059669', marginBottom: '12px' }}>
-                    Annual Premium Amount
-                  </div>
-                  <div style={styles.premiumDetails}>
-                    Sum Insured: ₹{calculatedPremium.sumInsured.toLocaleString()}
-                  </div>
-                  <div style={styles.premiumDetails}>
-                    Premium Rate: {calculatedPremium.rate}%
-                  </div>
-                  <div style={styles.premiumDetails}>
-                    Crop: {insuranceInfo.cropName} | Area: {insuranceInfo.area} acres | Location: {insuranceInfo.location}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic', marginTop: '8px' }}>
-                    *This is an estimated calculation. Actual premium may vary based on additional factors.
-                  </div>
-                </div>
-              ) : (
-                <div style={styles.resultBox}>
-                  <p style={{ margin: 0, color: '#6b7280' }}>Fill all details above to calculate your crop price</p>
-                </div>
-              )}
-              {!isInsuranceFormComplete && (
-                <div style={styles.requiredText}>
-                  * Please fill all required fields to calculate price
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -1693,41 +1934,41 @@ export default function Dashboard() {
                   </div>
                 </div>
               )) || (
-                  Array.from({ length: 3 }).map((_, index) => (
-                    <div
-                      key={index}
-                      style={styles.weatherCard}
-                      onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
-                      onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-                    >
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
-                          {new Date(Date.now() + index * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
+                Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    style={styles.weatherCard}
+                    onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                  >
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
+                        {new Date(Date.now() + index * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </div>
+                      <div style={{ marginBottom: '16px' }}>
+                        <Sun className="text-yellow-500" size={24} />
+                      </div>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+                        {22 + index}°C / {15 + index}°C
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '14px', color: '#6b7280' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Droplets size={16} />
+                          {20 + index * 10}%
                         </div>
-                        <div style={{ marginBottom: '16px' }}>
-                          <Sun className="text-yellow-500" size={24} />
-                        </div>
-                        <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
-                          {22 + index}°C / {15 + index}°C
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '14px', color: '#6b7280' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Droplets size={16} />
-                            {20 + index * 10}%
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Wind size={16} />
-                            {15 + index * 2} km/h
-                          </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Wind size={16} />
+                          {15 + index * 2} km/h
                         </div>
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))
+              )}
             </div>
             <div style={{ textAlign: 'center', marginTop: '24px' }}>
               <button
@@ -1788,26 +2029,26 @@ export default function Dashboard() {
                   </div>
                 </div>
               )) || (
-                  Array.from({ length: 24 }).map((_, index) => (
-                    <div key={index} style={styles.hourlyCard}>
-                      <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '8px' }}>
-                        {new Date(Date.now() + index * 60 * 60 * 1000).toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          hour12: true
-                        })}
-                      </div>
-                      <div style={{ marginBottom: '8px' }}>
-                        <Sun className="text-yellow-500" size={20} />
-                      </div>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>
-                        {Math.round(20 + Math.sin(index / 4) * 5)}°C
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#6b7280' }}>
-                        {Math.max(0, 30 - index)}%
-                      </div>
+                Array.from({ length: 24 }).map((_, index) => (
+                  <div key={index} style={styles.hourlyCard}>
+                    <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '8px' }}>
+                      {new Date(Date.now() + index * 60 * 60 * 1000).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        hour12: true
+                      })}
                     </div>
-                  ))
-                )}
+                    <div style={{ marginBottom: '8px' }}>
+                      <Sun className="text-yellow-500" size={20} />
+                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>
+                      {Math.round(20 + Math.sin(index / 4) * 5)}°C
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#6b7280' }}>
+                      {Math.max(0, 30 - index)}%
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -1944,6 +2185,22 @@ export default function Dashboard() {
         .text-gray-500 { color: #6b7280; }
         .text-blue-500 { color: #3b82f6; }
       `}</style>
+      <style>{`
+        @keyframes slideLeftToRight {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        * { box-sizing: border-box; }
+        .text-yellow-500 { color: #eab308; }
+        .text-gray-500 { color: #6b7280; }
+        .text-blue-500 { color: #3b82f6; }
+`}</style>
     </div>
   );
 }
