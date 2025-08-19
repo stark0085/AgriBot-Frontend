@@ -1070,38 +1070,172 @@ export default function Dashboard() {
       )}
 
       {/* Irrigation Insight Modal */}
-      {showIrrigationInsightModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowIrrigationInsightModal(false)}>
+      {showWeatherModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowWeatherModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>🌾 Irrigation Insights</h2>
-              <button onClick={() => setShowIrrigationInsightModal(false)} style={styles.modalCloseButton}><X size={20} /></button>
-            </div>
-            <div style={styles.insightContent}>
+              <h2 style={styles.modalTitle}>3-Day Weather Forecast</h2>
               <button
-                style={styles.getAdviceButton}
-                onClick={handleGetIrrigationAdvice}
+                onClick={() => setShowWeatherModal(false)}
+                style={styles.modalCloseButton}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}
               >
-                <Send size={20} />
-                Get Detailed Expert Advice
+                <X size={20} color="#6b7280" />
+              </button>
+            </div>
+            <div style={styles.weatherGrid}>
+              {loading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} style={styles.weatherCard}>
+                    <div style={{ textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
+                  </div>
+                ))
+              ) : weatherData?.timelines?.daily?.slice(0, 3).map((day, index) => (
+                <div
+                  key={index}
+                  style={styles.weatherCard}
+                  onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                >
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
+                      {formatDate(day.time)}
+                    </div>
+                    <div style={{ marginBottom: '16px' }}>
+                      {getWeatherIcon(day.values.weatherCodeMax)}
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+                      {Math.round(day.values.temperatureMax)}°C / {Math.round(day.values.temperatureMin)}°C
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '14px', color: '#6b7280' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Droplets size={16} />
+                        {Math.round(day.values.precipitationProbabilityMax)}%
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Wind size={16} />
+                        {Math.round(day.values.windSpeedMax)} km/h
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )) || (
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <div
+                      key={index}
+                      style={styles.weatherCard}
+                      onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
+                      onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                    >
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
+                          {new Date(Date.now() + index * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        <div style={{ marginBottom: '16px' }}>
+                          <Sun className="text-yellow-500" size={24} />
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+                          {22 + index}°C / {15 + index}°C
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '14px', color: '#6b7280' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Droplets size={16} />
+                            {20 + index * 10}%
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Wind size={16} />
+                            {15 + index * 2} km/h
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+              <button
+                onClick={() => {
+                  setShowWeatherModal(false);
+                  setShowHourlyModal(true);
+                }}
+                style={styles.viewForecastButton}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#2563eb';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#3b82f6';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                View 24-Hour Detailed Forecast
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Fertilizer Insight Modal */}
-      {showFertilizerInsightModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowFertilizerInsightModal(false)}>
+      {showHourlyModal && (
+        <div style={styles.modalOverlay} onClick={toggleHourlyModal}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>🧪 Fertilizer Insights</h2>
-              <button onClick={() => setShowFertilizerInsightModal(false)} style={styles.modalCloseButton}><X size={20} /></button>
-            </div>
-            <div style={styles.insightContent}>
-              <button style={styles.getAdviceButton} onClick={handleGetFertilizerAdvice}>
-                <Send size={20} /> Get Detailed Fertilizer Plan
+              <h2 style={styles.modalTitle}>24-Hour Weather Forecast</h2>
+              <button
+                onClick={toggleHourlyModal}
+                style={styles.modalCloseButton}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+              >
+                <X size={20} color="#6b7280" />
               </button>
+            </div>
+            <div style={styles.hourlyGrid}>
+              {loading ? (
+                Array.from({ length: 24 }).map((_, index) => (
+                  <div key={index} style={styles.hourlyCard}>
+                    <div style={{ color: '#9ca3af', fontSize: '12px' }}>Loading...</div>
+                  </div>
+                ))
+              ) : hourlyData?.data?.timelines?.[0]?.intervals?.slice(0, 24).map((hour, index) => (
+                <div key={index} style={styles.hourlyCard}>
+                  <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '8px' }}>
+                    {formatTime(hour.startTime)}
+                  </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    {getWeatherIcon(hour.values.weatherCode)}
+                  </div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>
+                    {Math.round(hour.values.temperature)}°C
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#6b7280' }}>
+                    {Math.round(hour.values.precipitationProbability)}%
+                  </div>
+                </div>
+              )) || (
+                  Array.from({ length: 24 }).map((_, index) => (
+                    <div key={index} style={styles.hourlyCard}>
+                      <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '8px' }}>
+                        {new Date(Date.now() + index * 60 * 60 * 1000).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          hour12: true
+                        })}
+                      </div>
+                      <div style={{ marginBottom: '8px' }}>
+                        <Sun className="text-yellow-500" size={20} />
+                      </div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>
+                        {Math.round(20 + Math.sin(index / 4) * 5)}°C
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#6b7280' }}>
+                        {Math.max(0, 30 - index)}%
+                      </div>
+                    </div>
+                  ))
+                )}
             </div>
           </div>
         </div>
