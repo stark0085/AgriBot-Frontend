@@ -3,7 +3,6 @@ import { Menu, Send, User, MessageCircle, X, Loader, LayoutDashboard, UserCircle
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom'; // Add this import
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-hot-toast';
 
 // Import the real context from your provider file
 import { ProfileContext } from '../Contexts/ProfileProvider';
@@ -201,11 +200,6 @@ function Chats() {
   const handleConfirmLogout = () => {
     logout();
     setShowLogoutModal(false);
-    toast.success('Logged out successfully!', {
-      duration: 2000,
-      position: 'top-center',
-      style: { background: '#10b981', color: '#fff', fontWeight: '600', borderRadius: '12px' },
-    });
     setTimeout(() => {
       navigate('/login');
     }, 1000);

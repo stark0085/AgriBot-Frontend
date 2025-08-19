@@ -170,11 +170,6 @@ const ProfilePage = () => {
   const handleConfirmLogout = () => {
     logout();
     setShowLogoutModal(false);
-    toast.success('Logged out successfully!', {
-      duration: 2000,
-      position: 'top-center',
-      style: { background: '#10b981', color: '#fff', fontWeight: '600', borderRadius: '12px' },
-    });
     setTimeout(() => {
       navigate('/login');
     }, 1000);
