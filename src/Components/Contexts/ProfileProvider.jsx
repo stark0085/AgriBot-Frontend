@@ -107,7 +107,6 @@ const ProfileProvider = ({ children }) => {
     setIsLoggedIn(false);
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
-    // We keep the language selection even after logout
     toast.success('Logged out successfully');
   };
 

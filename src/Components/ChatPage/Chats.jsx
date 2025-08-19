@@ -3,6 +3,7 @@ import { Menu, Send, User, MessageCircle, X, Loader, LayoutDashboard, UserCircle
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom'; // Add this import
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
 
 // Import the real context from your provider file
 import { ProfileContext } from '../Contexts/ProfileProvider';
@@ -12,7 +13,7 @@ function Chats() {
   const [messages, setMessages] = useState([
     { id: 1, text: "Hello! How can I help you today?", isBot: true, timestamp: new Date() }
   ]);
-  
+
   // State for user input and UI controls
   const { t } = useTranslation();
   const [inputMessage, setInputMessage] = useState('');
@@ -24,9 +25,9 @@ function Chats() {
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // This now correctly uses the user data from your real ProfileProvider
-  const { logout, user } = useContext(ProfileContext); 
+  const { logout, user } = useContext(ProfileContext);
   const initialMessageProcessed = useRef(false);
 
   // Function to automatically scroll to the latest message
@@ -57,12 +58,12 @@ function Chats() {
       console.error('User email not found. Cannot send message.');
       return { reply: 'Authentication error. Please log in again.' };
     }
-      
+
     try {
       console.log('Sending message to API:', userMessage);
-      
+
       // Using axios to make the API call with timeout and better configuration
-      const response = await axios.post('https://agri-bot-backend-ba3f.vercel.app/messages/sendmessage', 
+      const response = await axios.post('https://agri-bot-backend-ba3f.vercel.app/messages/sendmessage',
         {
           email: user.email,
           query: userMessage,
@@ -75,26 +76,26 @@ function Chats() {
         }
       );
       console.log('API response data:', response.data);
-      
+
       const data = response.data;
-      
+
       // Better response validation
       if (!data) {
         console.error('Empty response data');
         return { reply: 'Received empty response from server.' };
       }
-      
+
       if (!data.reply) {
         console.error('No reply field in response:', data);
         return { reply: 'Server response missing reply field.' };
       }
-      
+
       return {
         reply: data.reply,
       };
     } catch (error) {
       console.error('API Error:', error);
-      
+
       // More detailed error handling
       if (error.code === 'ECONNABORTED') {
         console.error('Request timeout');
@@ -127,13 +128,13 @@ function Chats() {
       return;
     }
     setIsLoading(true);
-    
+
     // Add user message to chat
-    const newUserMessage = { 
-      id: Date.now(), 
-      text: userMessage.trim(), 
-      isBot: false, 
-      timestamp: new Date() 
+    const newUserMessage = {
+      id: Date.now(),
+      text: userMessage.trim(),
+      isBot: false,
+      timestamp: new Date()
     };
     setMessages(prev => [...prev, newUserMessage]);
 
@@ -142,21 +143,21 @@ function Chats() {
       const apiResponse = await sendMessageToAPI(userMessage.trim());
       const botResponseText = apiResponse.reply;
       // Add bot response to chat
-      const newBotMessage = { 
-        id: Date.now() + 1, 
-        text: botResponseText, 
-        isBot: true, 
-        timestamp: new Date() 
+      const newBotMessage = {
+        id: Date.now() + 1,
+        text: botResponseText,
+        isBot: true,
+        timestamp: new Date()
       };
       setMessages(prev => [...prev, newBotMessage]);
     } catch (error) {
       console.error('Error processing message:', error);
       // Add error message to chat
-      const errorMessage = { 
-        id: Date.now() + 1, 
-        text: 'Sorry, I encountered an error processing your message. Please try again.', 
-        isBot: true, 
-        timestamp: new Date() 
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: 'Sorry, I encountered an error processing your message. Please try again.',
+        isBot: true,
+        timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -200,7 +201,14 @@ function Chats() {
   const handleConfirmLogout = () => {
     logout();
     setShowLogoutModal(false);
-    navigate('/login');
+    toast.success('Logged out successfully!', {
+      duration: 2000,
+      position: 'top-center',
+      style: { background: '#10b981', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+    });
+    setTimeout(() => {
+      navigate('/login');
+    }, 1000);
   };
   const handleCancelLogout = () => setShowLogoutModal(false);
 
@@ -341,7 +349,7 @@ function Chats() {
 
         <div style={{ padding: '16px 24px', backgroundColor: '#F5E6D3', borderTop: '2px solid white', marginLeft: '8vw', marginRight: '8vw' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px', background: '#FFFFFF', borderRadius: '12px', padding: '8px', border: '1px solid #E5E7EB' }}>
-            <textarea value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleKeyPress} placeholder={t('placeholder')}disabled={isLoading} style={{ flex: 1, padding: '10px', border: 'none', background: 'transparent', resize: 'none', outline: 'none', fontSize: '14px', color: '#1F2937' }} rows={1} />
+            <textarea value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleKeyPress} placeholder={t('placeholder')} disabled={isLoading} style={{ flex: 1, padding: '10px', border: 'none', background: 'transparent', resize: 'none', outline: 'none', fontSize: '14px', color: '#1F2937' }} rows={1} />
             <button onClick={handleSendMessage} disabled={!inputMessage.trim() || isLoading} style={{
               width: '36px', height: '36px', borderRadius: '8px', border: 'none',
               background: (!inputMessage.trim() || isLoading) ? '#D1D5DB' : '#3B82F6',

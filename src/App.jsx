@@ -19,7 +19,6 @@ function App() {
     <ProfileProvider>
       <Router>
         <div className="App">
-          {/* React Hot Toast Container */}
           <Toaster 
             position="top-center"
             toastOptions={{

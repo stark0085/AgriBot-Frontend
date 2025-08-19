@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Send, Menu, X, Cloud, Sun, CloudRain, Thermometer, Droplets, Wind, ExternalLink, Leaf, TestTube2, MessageCircle, User, Globe, LogOut } from 'lucide-react';
+import { Send, Menu, X, Cloud, Sun, CloudRain, Thermometer, Droplets, Wind, ExternalLink, Leaf, TestTube2, MessageCircle, User, Globe, LogOut, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ProfileContext } from '../Contexts/ProfileProvider'; // <-- Add this import
+import { ProfileContext } from '../Contexts/ProfileProvider';
 import placards_bcg from '../../assets/dahboardbcg.png';
 import rupee from '../../assets/rupee.png';
 import weather from '../../assets/weather.png';
@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [showIrrigationInsightModal, setShowIrrigationInsightModal] = useState(false);
   const [showFertilizerInsightModal, setShowFertilizerInsightModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showCropTimelineModal, setShowCropTimelineModal] = useState(false);
 
   // Insurance calculator state
   const [insuranceInfo, setInsuranceInfo] = useState({
@@ -36,6 +37,14 @@ export default function Dashboard() {
     area: '',
   });
   const [calculatedPremium, setCalculatedPremium] = useState(null);
+
+  // Crop Timeline state
+  const [cropTimelineInfo, setCropTimelineInfo] = useState({
+    cropName: '',
+    soilType: ''
+  });
+  const [cropTimelineResult, setCropTimelineResult] = useState(null);
+
 
   // Expanded crop info state to include soil test data
   const [cropInfo, setCropInfo] = useState({
@@ -85,7 +94,7 @@ export default function Dashboard() {
       try {
         setLoading(true);
         const Weather_Api_Key = '86Ils1zBsLLsuPH8BdJ1gUa9CEwno31F';
-        const user_location = "Kharagpur";
+        const user_location = user?.district || "Kharagpur";
 
         const forecastResponse = await fetch(
           `https://api.tomorrow.io/v4/weather/forecast?location=${user_location}&apikey=${Weather_Api_Key}`
@@ -119,8 +128,10 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-    fetchWeatherData();
-  }, []);
+    if (user?.district) {
+      fetchWeatherData();
+    }
+  }, [user]);
 
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -133,15 +144,10 @@ export default function Dashboard() {
     navigate('/chat', { state: { initialMessage: question } });
   };
 
-  // Insurance calculator functions
-  // Updated handleCalculateInsurance function to use backend API
-  // Updated handleCalculateInsurance function with price-only query
+  // Crop Price Calculator function
   const handleCalculateInsurance = async () => {
     try {
-      // Show loading state
       setCalculatedPremium({ loading: true });
-
-      // Use user from outer scope (already from useContext)
       const userEmail = user?.email;
       const userDistrict = user?.district;
 
@@ -150,21 +156,18 @@ export default function Dashboard() {
         return;
       }
 
-      // Create a focused query that asks only for price
       const query = `Calculate the current market price for ${insuranceInfo.cropName} crop for ${insuranceInfo.area} acres in ${userDistrict} district. In your response only give what you think is the approximate selling prices and nothing else. Provide the price per quintal and total estimated value for the given area.`;
 
-      // Prepare payload for API
       const payload = {
         email: userEmail,
         query: query
       };
 
-      // Make API call to backend
       const response = await fetch('https://agri-bot-backend-ba3f.vercel.app/messages/sendmessage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Include auth token if required
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         },
         body: JSON.stringify(payload)
       });
@@ -174,12 +177,8 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
-      console.log('API Response:', data); // For debugging
-
-      // Extract the reply message from the response
       const priceMessage = data.reply || data.response || data.message || 'Price analysis completed successfully.';
 
-      // Set the response from backend
       setCalculatedPremium({
         loading: false,
         response: priceMessage,
@@ -190,44 +189,99 @@ export default function Dashboard() {
         success: true
       });
 
-      // Show success toast
       toast.success('Crop price calculated!', {
         duration: 4000,
         position: 'top-center',
-        style: {
-          background: '#10b981',
-          color: '#fff',
-          fontWeight: '600',
-          borderRadius: '12px',
-          maxWidth: '400px'
-        },
+        style: { background: '#10b981', color: '#fff', fontWeight: '600', borderRadius: '12px' },
         icon: '💰',
       });
 
     } catch (error) {
       console.error('Error calculating crop price:', error);
-
-      // Set error state
       setCalculatedPremium({
         loading: false,
         error: 'Failed to get crop price. Please try again later.',
         timestamp: new Date().toLocaleString(),
         success: false
       });
-
-      // Show error toast
       toast.error('Failed to calculate crop price. Please check your connection and try again.', {
         duration: 4000,
         position: 'top-center',
-        style: {
-          background: '#ef4444',
-          color: '#fff',
-          fontWeight: '600',
-          borderRadius: '12px'
-        },
+        style: { background: '#ef4444', color: '#fff', fontWeight: '600', borderRadius: '12px' },
       });
     }
   };
+
+  // Crop Timeline generator function
+  const handleGenerateCropTimeline = async () => {
+    try {
+      setCropTimelineResult({ loading: true });
+      const userEmail = user?.email;
+      const userDistrict = user?.district;
+
+      if (!userEmail) {
+        toast.error('User not logged in. Please log in to generate crop timeline.');
+        return;
+      }
+
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      const query = `Generate a comprehensive crop timeline and growing guide for ${cropTimelineInfo.cropName} in ${cropTimelineInfo.soilType} soil in ${userDistrict} district. Current date is ${currentDate}. Provide detailed month-wise activities, planting schedule, care instructions, harvest timing, and best practices for this crop in the given soil and location conditions.`;
+
+      const payload = { email: userEmail, query: query };
+
+      const response = await fetch('https://agri-bot-backend-ba3f.vercel.app/messages/sendmessage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const timelineMessage = data.reply || data.response || data.message || 'Crop timeline generated successfully.';
+
+      setCropTimelineResult({
+        loading: false,
+        response: timelineMessage,
+        cropName: cropTimelineInfo.cropName,
+        soilType: cropTimelineInfo.soilType,
+        district: userDistrict,
+        currentDate: currentDate,
+        timestamp: new Date().toLocaleString(),
+        success: true
+      });
+
+      toast.success('Crop timeline generated!', {
+        duration: 4000,
+        position: 'top-center',
+        style: { background: '#10b981', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+        icon: '📅',
+      });
+
+    } catch (error) {
+      console.error('Error generating crop timeline:', error);
+      setCropTimelineResult({
+        loading: false,
+        error: 'Failed to generate crop timeline. Please try again later.',
+        timestamp: new Date().toLocaleString(),
+        success: false
+      });
+      toast.error('Failed to generate crop timeline. Please check your connection and try again.', {
+        duration: 4000,
+        position: 'top-center',
+        style: { background: '#ef4444', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+      });
+    }
+  };
+
   // Handlers for insights
   const handleIrrigationInsight = () => {
     setShowCropInfoModal(false);
@@ -268,727 +322,41 @@ export default function Dashboard() {
     }));
   };
 
-  // Navigation handlers for sidebar
-  const handleLanguageClick = () => {
-    navigate('/');
-    setIsMenuOpen(false);
-  };
-
-  const handleChatClick = () => {
-    navigate('/chat');
-    setIsMenuOpen(false);
-  };
-
-  const handleProfileClick = () => {
-    navigate('/profile');
-    setIsMenuOpen(false);
-  };
-
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-    setIsMenuOpen(false);
-  };
-
+  // Navigation handlers
+  const handleLanguageClick = () => { navigate('/'); setIsMenuOpen(false); };
+  const handleChatClick = () => { navigate('/chat'); setIsMenuOpen(false); };
+  const handleProfileClick = () => { navigate('/profile'); setIsMenuOpen(false); };
+  const handleLogout = () => { setShowLogoutModal(true); setIsMenuOpen(false); };
   const handleConfirmLogout = () => {
     logout();
     setShowLogoutModal(false);
-    navigate('/login');
+    toast.success('Logged out successfully!', {
+      duration: 2000,
+      position: 'top-center',
+      style: { background: '#10b981', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+    });
+    setTimeout(() => {
+      navigate('/login');
+    }, 1000);
   };
   const handleCancelLogout = () => setShowLogoutModal(false);
 
   const isFormComplete = cropInfo.cropType && cropInfo.cropStage && cropInfo.soilType && cropInfo.farmSize;
   const isInsuranceFormComplete = insuranceInfo.cropName && insuranceInfo.area;
+  const isCropTimelineFormComplete = cropTimelineInfo.cropName && cropTimelineInfo.soilType;
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleHourlyModal = () => setShowHourlyModal(!showHourlyModal);
   const handleSchemeClick = (link) => window.open(link, '_blank', 'noopener,noreferrer');
-  const handleKrishiRakshakClick = () => window.open('https://pmfby.gov.in/krph/', '_blank', 'noopener,noreferrer');
-
-  const getWeatherIcon = (code) => {
-    if (code <= 1100) return <Sun className="text-yellow-500" size={24} />;
-    if (code <= 2100) return <Cloud className="text-gray-500" size={24} />;
-    return <CloudRain className="text-blue-500" size={24} />;
-  };
-
-  const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  const formatTime = (dateString) => new Date(dateString).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
 
   const styles = {
-    container: {
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%)',
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    },
-    bannerSection: {
-      position: 'relative',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '60px',
-      background: 'linear-gradient(to right, #a7d4e9 0%, #c3d0d9 100%)',
-      zIndex: 40,
-      overflow: 'hidden',
-      boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)',
-      display: 'flex',
-      alignItems: 'center'
-    },
-    bannerContent: {
-      position: 'absolute',
-      whiteSpace: 'nowrap',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      animation: 'slideLeftToRight 45s linear infinite',
-      paddingLeft: '0'
-    },
-    bannerText: {
-      color: 'black',
-      fontSize: '20px',
-      fontWeight: '600',
-      padding: '0 40px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      cursor: 'pointer',
-      transition: 'all 0.3s',
-      minWidth: 'max-content'
-    },
-    hamburgerButton: {
-      position: 'fixed',
-      top: '16px',
-      left: '16px',
-      zIndex: 50,
-      padding: '12px',
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-      border: '1px solid #e2e8f0',
-      cursor: 'pointer',
-      transition: 'all 0.2s'
-    },
-    menuOverlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      zIndex: 40
-    },
-    sideMenu: {
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      height: '100%',
-      width: '300px',
-      background: 'linear-gradient(180deg, #87CEEB 0%, #4682B4 100%)',
-      boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-      zIndex: 50,
-      transform: 'translateX(0)',
-      transition: 'transform 0.3s',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    menuHeader: {
-      padding: '24px',
-      borderBottom: '2px solid rgba(255,255,255,0.2)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    },
-    menuTitle: {
-      fontSize: '24px',
-      fontWeight: '700',
-      color: 'white',
-      textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-    },
-    closeButton: {
-      padding: '8px',
-      borderRadius: '50%',
-      border: 'none',
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      cursor: 'pointer',
-      color: 'white',
-      transition: 'all 0.2s'
-    },
-    menuContent: {
-      flex: 1,
-      padding: '24px 0',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    menuSection: {
-      marginBottom: '8px'
-    },
-    sectionTitle: {
-      color: 'rgba(255,255,255,0.8)',
-      fontSize: '14px',
-      fontWeight: '600',
-      padding: '0 24px',
-      marginBottom: '12px',
-      textTransform: 'uppercase',
-      letterSpacing: '1px'
-    },
-    menuButton: {
-      width: '100%',
-      backgroundColor: 'transparent',
-      color: 'white',
-      padding: '16px 24px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '16px',
-      fontWeight: '500',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      transition: 'all 0.2s',
-      textAlign: 'left',
-      borderBottom: '1px solid rgba(255,255,255,0.1)'
-    },
-    menuButtonHover: {
-      backgroundColor: 'rgba(255,255,255,0.15)',
-      color: 'white',
-      paddingLeft: '32px'
-    },
-    logoutSection: {
-      marginTop: 'auto',
-      padding: '0 24px 24px 24px'
-    },
-    logoutButton: {
-      width: '100%',
-      backgroundColor: 'transparent',
-      color: 'red',
-      padding: '16px 24px',
-      border: '2px solid red',
-      borderRadius: '12px',
-      cursor: 'pointer',
-      fontSize: '16px',
-      fontWeight: '600',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '12px',
-      transition: 'all 0.2s',
-      textAlign: 'center'
-    },
-    logoutButtonHover: {
-      backgroundColor: 'red',
-      color: 'white'
-    },
-    mainContent: {
-      flex: 1,
-      padding: '32px',
-      borderTop: '2px solid black',
-      paddingBottom: '120px',
-      backgroundImage: `url(${placards_bcg})`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'center',
-      backgroundSize: 'cover',
-    },
-    contentWrapper: {
-      maxWidth: '1200px',
-      margin: '0 auto'
-    },
-    title: {
-      fontSize: '48px',
-      fontWeight: 'bold',
-      color: '#1f2937',
-      marginBottom: '24px',
-      textAlign: 'center'
-    },
-    sectionTitleMain: {
-      fontWeight: '600',
-      color: 'white',
-      marginBottom: '24px',
-      textAlign: 'center'
-    },
-    cardsSection: {
-      display: 'flex',
-      gap: '15px',
-      justifyContent: 'center',
-      maxWidth: '1500px',
-      margin: '0 auto',
-      marginBottom: '48px',
-      flexWrap: window.innerWidth < 1200 ? 'wrap' : 'nowrap',
-    },
-    card: {
-      width: '285px',
-      height: '280px',
-      borderRadius: '20px',
-      paddingTop: '24px',
-      color: 'white',
-      cursor: 'pointer',
-      transition: 'all 0.3s',
-      boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      position: 'relative',
-      overflow: 'hidden'
-    },
-    cardIcon: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
-    iconBackground: {
-      width: '60px',
-      height: '60px',
-      borderRadius: '50%',
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '24px'
-    },
-    cardContent: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-      paddingBottom: '20px'
-    },
-    cardTitle: {
-      fontSize: '20px',
-      fontWeight: '600',
-      marginBottom: '12px',
-      lineHeight: '1.4'
-    },
-    cardDescription: {
-      fontSize: '17px',
-      opacity: '0.9',
-      marginBottom: '20px',
-      lineHeight: '1.4'
-    },
-    cardButton: {
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      border: '1px solid rgba(255,255,255,0.3)',
-      color: 'white',
-      padding: '10px 20px',
-      borderRadius: '8px',
-      fontSize: '14px',
-      fontWeight: '500',
-      cursor: 'pointer',
-      transition: 'all 0.2s'
-    },
-    sampleQuestionsSection: {
-      marginBottom: '48px'
-    },
-    basicQuestionsGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-      gap: '16px',
-      marginBottom: '24px'
-    },
-    questionCard: {
-      backgroundColor: '#d4d4ae',
-      padding: '20px',
-      borderRadius: '12px',
-      boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
-      border: '1px solid #e5e7eb',
-      cursor: 'pointer',
-      transition: 'all 0.3s',
-      fontSize: '16px',
-      color: '#374151',
-      textAlign: 'center',
-      fontWeight: '500',
-      lineHeight: '1.4',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '80px'
-    },
-    moreExamplesButton: {
-      backgroundColor: '#22c55e',
-      color: 'white',
-      padding: '12px 24px',
-      borderRadius: '8px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '16px',
-      fontWeight: '600',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-      margin: '0 auto'
-    },
-    categoriesContainer: {
-      marginTop: '32px'
-    },
-    categorySection: {
-      marginBottom: '40px'
-    },
-    categoryTitle: {
-      color: 'white',
-      fontSize: '22px',
-      fontWeight: '600',
-      marginBottom: '20px',
-      textAlign: 'center'
-    },
-    categoryGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-      gap: '16px'
-    },
-    inputContainer: {
-      position: 'fixed',
-      bottom: '0vw',
-      left: 0,
-      right: 0,
-      padding: '24px',
-      zIndex: 40,
-    },
-    inputWrapper: {
-      maxWidth: '1024px',
-      margin: '0 auto',
-      display: 'flex',
-      gap: '12px',
-      alignItems: 'flex-end'
-    },
-    inputField: {
-      flex: 1,
-      padding: '16px 24px',
-      fontSize: '18px',
-      border: '2px solid #bfdbfe',
-      borderRadius: '16px',
-      outline: 'none',
-      backgroundColor: '#f0f9ff',
-      transition: 'all 0.2s',
-      height: '56px',
-      boxSizing: 'border-box'
-    },
-    sendButton: {
-      padding: '16px 24px',
-      backgroundColor: '#3b82f6',
-      color: 'black',
-      borderRadius: '16px',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)',
-      height: '56px',
-      minWidth: '56px'
-    },
-    sendButtonDisabled: {
-      backgroundColor: '#d1d5db',
-      cursor: 'not-allowed',
-      boxShadow: 'none'
-    },
-    modalOverlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.7)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 60
-    },
-    modal: {
-      backgroundColor: 'white',
-      borderRadius: '20px',
-      padding: '32px',
-      maxWidth: '900px',
-      maxHeight: '80vh',
-      width: '90%',
-      overflowY: 'auto',
-      boxShadow: '0 25px 50px rgba(0,0,0,0.3)'
-    },
-    insightButtonsContainer: {
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '20px',
-      marginTop: '32px'
-    },
-    fertilizerInsightButton: {
-      backgroundColor: '#16a34a',
-      color: 'white',
-      padding: '16px 32px',
-      borderRadius: '12px',
-      border: 'none',
-      fontSize: '18px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)'
-    },
-    fertilizerInsightButtonDisabled: {
-      backgroundColor: '#d1d5db',
-      cursor: 'not-allowed',
-      boxShadow: 'none',
-      color: 'black'
-    },
-    soilTestGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '16px'
-    },
-    soilTestInputGroup: {
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    soilTestLabel: {
-      fontSize: '14px',
-      color: '#4b5563',
-      marginBottom: '6px'
-    },
-    modalHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '24px'
-    },
-    modalTitle: {
-      fontSize: '24px',
-      fontWeight: '600',
-      color: '#1f2937'
-    },
-    modalCloseButton: {
-      padding: '8px',
-      borderRadius: '50%',
-      border: 'none',
-      backgroundColor: '#f3f4f6',
-      cursor: 'pointer',
-      transition: 'all 0.2s'
-    },
-    calculatorContent: {
-      padding: '20px 0'
-    },
-    inputGroup: {
-      marginBottom: '20px'
-    },
-    inputLabel: {
-      display: 'block',
-      marginBottom: '8px',
-      fontSize: '14px',
-      fontWeight: '500',
-      color: '#374151'
-    },
-    calculateButton: {
-      width: '100%',
-      backgroundColor: '#3b82f6',
-      color: 'white',
-      padding: '12px',
-      borderRadius: '8px',
-      border: 'none',
-      fontSize: '16px',
-      fontWeight: '500',
-      cursor: 'pointer',
-      marginBottom: '20px',
-      transition: 'all 0.2s'
-    },
-    calculateButtonDisabled: {
-      backgroundColor: '#d1d5db',
-      cursor: 'not-allowed',
-      color: 'black'
-    },
-    resultBox: {
-      backgroundColor: '#f3f4f6',
-      padding: '20px',
-      borderRadius: '8px',
-      textAlign: 'center',
-      border: '1px solid #e5e7eb'
-    },
-    premiumResultBox: {
-      backgroundColor: '#ecfdf5',
-      padding: '24px',
-      borderRadius: '12px',
-      textAlign: 'center',
-      border: '2px solid #10b981',
-      marginTop: '20px'
-    },
-    premiumAmount: {
-      fontSize: '32px',
-      fontWeight: 'bold',
-      color: '#059669',
-      marginBottom: '8px'
-    },
-    premiumDetails: {
-      fontSize: '14px',
-      color: '#6b7280',
-      marginBottom: '4px'
-    },
-    cropInfoContent: {
-      padding: '12px 0'
-    },
-    cropInfoSection: {
-      marginBottom: '24px',
-      padding: '20px',
-      backgroundColor: '#f8fafc',
-      borderRadius: '12px',
-      border: '1px solid #e2e8f0'
-    },
-    cropInfoTitle: {
-      fontSize: '18px',
-      fontWeight: '600',
-      color: '#1f2937',
-      marginBottom: '16px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px'
-    },
-    cropInfoInput: {
-      width: '100%',
-      padding: '12px 16px',
-      fontSize: '16px',
-      border: '2px solid #e2e8f0',
-      borderRadius: '8px',
-      outline: 'none',
-      backgroundColor: 'white',
-      transition: 'border-color 0.2s',
-      marginBottom: '0px'
-    },
-    cropInfoSelect: {
-      width: '100%',
-      padding: '12px 16px',
-      fontSize: '16px',
-      border: '2px solid #e2e8f0',
-      borderRadius: '8px',
-      outline: 'none',
-      backgroundColor: 'white',
-      transition: 'border-color 0.2s',
-      marginBottom: '0px',
-      cursor: 'pointer'
-    },
-    irrigationInsightButton: {
-      backgroundColor: '#3b82f6',
-      color: 'white',
-      padding: '16px 32px',
-      borderRadius: '12px',
-      border: 'none',
-      fontSize: '18px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-    },
-    irrigationInsightButtonDisabled: {
-      backgroundColor: '#d1d5db',
-      cursor: 'not-allowed',
-      boxShadow: 'none',
-      color: 'black'
-    },
-    requiredText: {
-      fontSize: '14px',
-      color: '#ef4444',
-      fontStyle: 'italic',
-      textAlign: 'center',
-      marginTop: '16px'
-    },
-    insightContent: {
-      padding: '24px 0'
-    },
-    insightSection: {
-      backgroundColor: '#f0f9ff',
-      padding: '24px',
-      borderRadius: '12px',
-      border: '2px solid #bfdbfe',
-      marginBottom: '24px'
-    },
-    insightTitle: {
-      fontSize: '20px',
-      fontWeight: '700',
-      color: '#1e40af',
-      marginBottom: '16px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px'
-    },
-    insightText: {
-      fontSize: '16px',
-      color: '#1f2937',
-      lineHeight: '1.6',
-      marginBottom: '12px'
-    },
-    insightList: {
-      paddingLeft: '20px',
-      marginBottom: '16px'
-    },
-    insightListItem: {
-      fontSize: '15px',
-      color: '#374151',
-      lineHeight: '1.5',
-      marginBottom: '8px'
-    },
-    getAdviceButton: {
-      backgroundColor: '#16a34a',
-      color: 'white',
-      padding: '16px 32px',
-      borderRadius: '12px',
-      border: 'none',
-      fontSize: '18px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      margin: '24px auto',
-      boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)'
-    },
-    weatherGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-      gap: '24px'
-    },
-    weatherCard: {
-      backgroundColor: 'white',
-      padding: '24px',
-      borderRadius: '16px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-      border: '1px solid #dbeafe',
-      transition: 'all 0.3s'
-    },
-    hourlyGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-      gap: '16px',
-      maxHeight: '400px',
-      overflowY: 'auto'
-    },
-    hourlyCard: {
-      backgroundColor: 'white',
-      padding: '16px',
-      borderRadius: '12px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      textAlign: 'center',
-      border: '1px solid #e5e7eb'
-    },
-    viewForecastButton: {
-      backgroundColor: '#3b82f6',
-      color: 'white',
-      padding: '12px 24px',
-      borderRadius: '12px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '16px',
-      fontWeight: '500',
-      transition: 'all 0.2s',
-      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-      display: 'block',
-      margin: '0 auto'
-    }
+    container: { minHeight: '100vh', background: 'linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%)', position: 'relative', display: 'flex', flexDirection: 'column', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }, bannerSection: { position: 'relative', top: 0, left: 0, right: 0, height: '60px', background: 'linear-gradient(to right, #a7d4e9 0%, #c3d0d9 100%)', zIndex: 40, overflow: 'hidden', boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)', display: 'flex', alignItems: 'center' }, bannerContent: { position: 'absolute', whiteSpace: 'nowrap', height: '100%', display: 'flex', alignItems: 'center', animation: 'slideLeftToRight 45s linear infinite', paddingLeft: '0' }, bannerText: { color: 'black', fontSize: '20px', fontWeight: '600', padding: '0 40px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', transition: 'all 0.3s', minWidth: 'max-content' }, hamburgerButton: { position: 'fixed', top: '16px', left: '16px', zIndex: 50, padding: '12px', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s' }, menuOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 40 }, sideMenu: { position: 'fixed', left: 0, top: 0, height: '100%', width: '300px', background: 'linear-gradient(180deg, #87CEEB 0%, #4682B4 100%)', boxShadow: '0 25px 50px rgba(0,0,0,0.25)', zIndex: 50, transform: 'translateX(0)', transition: 'transform 0.3s', display: 'flex', flexDirection: 'column' }, menuHeader: { padding: '24px', borderBottom: '2px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }, menuTitle: { fontSize: '24px', fontWeight: '700', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }, closeButton: { padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.2)', cursor: 'pointer', color: 'white', transition: 'all 0.2s' }, menuContent: { flex: 1, padding: '24px 0', display: 'flex', flexDirection: 'column' }, menuSection: { marginBottom: '8px' }, sectionTitle: { color: 'rgba(255,255,255,0.8)', fontSize: '14px', fontWeight: '600', padding: '0 24px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }, menuButton: { width: '100%', backgroundColor: 'transparent', color: 'white', padding: '16px 24px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.1)' }, menuButtonHover: { backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', paddingLeft: '32px' }, logoutSection: { marginTop: 'auto', padding: '0 24px 24px 24px' }, logoutButton: { width: '100%', backgroundColor: 'transparent', color: 'red', padding: '16px 24px', border: '2px solid red', borderRadius: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', transition: 'all 0.2s', textAlign: 'center' }, logoutButtonHover: { backgroundColor: 'red', color: 'white' }, mainContent: { flex: 1, padding: '32px', borderTop: '2px solid black', paddingBottom: '120px', backgroundImage: `url(${placards_bcg})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: 'cover', }, contentWrapper: { maxWidth: '1200px', margin: '0 auto' }, title: { fontSize: '48px', fontWeight: 'bold', color: '#1f2937', marginBottom: '24px', textAlign: 'center' }, sectionTitleMain: { fontWeight: '600', color: 'white', marginBottom: '24px', textAlign: 'center' }, cardsSection: { display: 'flex', gap: '15px', justifyContent: 'center', maxWidth: '1500px', margin: '0 auto', marginBottom: '48px', flexWrap: window.innerWidth < 1200 ? 'wrap' : 'nowrap', }, card: { width: '285px', height: '280px', borderRadius: '20px', paddingTop: '24px', color: 'white', cursor: 'pointer', transition: 'all 0.3s', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', position: 'relative', overflow: 'hidden' }, cardIcon: { display: 'flex', justifyContent: 'center', alignItems: 'center' }, iconBackground: { width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }, cardContent: { display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', paddingBottom: '20px' }, cardTitle: { fontSize: '20px', fontWeight: '600', marginBottom: '12px', lineHeight: '1.4' }, cardDescription: { fontSize: '17px', opacity: '0.9', marginBottom: '20px', lineHeight: '1.4' }, cardButton: { backgroundColor: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', transition: 'all 0.2s' }, sampleQuestionsSection: { marginBottom: '48px' }, basicQuestionsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }, questionCard: { backgroundColor: '#d4d4ae', padding: '20px', borderRadius: '12px', boxShadow: '0 8px 20px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb', cursor: 'pointer', transition: 'all 0.3s', fontSize: '16px', color: '#374151', textAlign: 'center', fontWeight: '500', lineHeight: '1.4', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80px' }, moreExamplesButton: { backgroundColor: '#22c55e', color: 'white', padding: '12px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '0 auto' }, categoriesContainer: { marginTop: '32px' }, categorySection: { marginBottom: '40px' }, categoryTitle: { color: 'white', fontSize: '22px', fontWeight: '600', marginBottom: '20px', textAlign: 'center' }, categoryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }, inputContainer: { position: 'fixed', bottom: '0vw', left: 0, right: 0, padding: '24px', zIndex: 40, }, inputWrapper: { maxWidth: '1024px', margin: '0 auto', display: 'flex', gap: '12px', alignItems: 'flex-end' }, inputField: { flex: 1, padding: '16px 24px', fontSize: '18px', border: '2px solid #bfdbfe', borderRadius: '16px', outline: 'none', backgroundColor: '#f0f9ff', transition: 'all 0.2s', height: '56px', boxSizing: 'border-box' }, sendButton: { padding: '16px 24px', backgroundColor: '#3b82f6', color: 'black', borderRadius: '16px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)', height: '56px', minWidth: '56px' }, sendButtonDisabled: { backgroundColor: '#d1d5db', cursor: 'not-allowed', boxShadow: 'none' }, modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }, modal: { backgroundColor: 'white', borderRadius: '20px', padding: '32px', maxWidth: '900px', maxHeight: '80vh', width: '90%', overflowY: 'auto', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }, insightButtonsContainer: { display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '32px' }, fertilizerInsightButton: { backgroundColor: '#16a34a', color: 'white', padding: '16px 32px', borderRadius: '12px', border: 'none', fontSize: '18px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)' }, fertilizerInsightButtonDisabled: { backgroundColor: '#d1d5db', cursor: 'not-allowed', boxShadow: 'none', color: 'black' }, soilTestGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }, soilTestInputGroup: { display: 'flex', flexDirection: 'column' }, soilTestLabel: { fontSize: '14px', color: '#4b5563', marginBottom: '6px' }, modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }, modalTitle: { fontSize: '24px', fontWeight: '600', color: '#1f2937' }, modalCloseButton: { padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: '#f3f4f6', cursor: 'pointer', transition: 'all 0.2s' }, calculatorContent: { padding: '20px 0' }, inputGroup: { marginBottom: '20px' }, inputLabel: { display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }, calculateButton: { width: '100%', backgroundColor: '#3b82f6', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', fontSize: '16px', fontWeight: '500', cursor: 'pointer', marginBottom: '20px', transition: 'all 0.2s' }, calculateButtonDisabled: { backgroundColor: '#d1d5db', cursor: 'not-allowed', color: 'black' }, resultBox: { backgroundColor: '#f3f4f6', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '1px solid #e5e7eb' }, premiumResultBox: { backgroundColor: '#ecfdf5', padding: '24px', borderRadius: '12px', textAlign: 'center', border: '2px solid #10b981', marginTop: '20px' }, premiumAmount: { fontSize: '32px', fontWeight: 'bold', color: '#059669', marginBottom: '8px' }, premiumDetails: { fontSize: '14px', color: '#6b7280', marginBottom: '4px' }, cropInfoContent: { padding: '12px 0' }, cropInfoSection: { marginBottom: '24px', padding: '20px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }, cropInfoTitle: { fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }, cropInfoInput: { width: '100%', padding: '12px 16px', fontSize: '16px', border: '2px solid #e2e8f0', borderRadius: '8px', outline: 'none', backgroundColor: 'white', transition: 'border-color 0.2s', marginBottom: '0px' }, cropInfoSelect: { width: '100%', padding: '12px 16px', fontSize: '16px', border: '2px solid #e2e8f0', borderRadius: '8px', outline: 'none', backgroundColor: 'white', transition: 'border-color 0.2s', marginBottom: '0px', cursor: 'pointer' }, irrigationInsightButton: { backgroundColor: '#3b82f6', color: 'white', padding: '16px 32px', borderRadius: '12px', border: 'none', fontSize: '18px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' }, irrigationInsightButtonDisabled: { backgroundColor: '#d1d5db', cursor: 'not-allowed', boxShadow: 'none', color: 'black' }, requiredText: { fontSize: '14px', color: '#ef4444', fontStyle: 'italic', textAlign: 'center', marginTop: '16px' }, insightContent: { padding: '24px 0' }, insightSection: { backgroundColor: '#f0f9ff', padding: '24px', borderRadius: '12px', border: '2px solid #bfdbfe', marginBottom: '24px' }, insightTitle: { fontSize: '20px', fontWeight: '700', color: '#1e40af', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }, insightText: { fontSize: '16px', color: '#1f2937', lineHeight: '1.6', marginBottom: '12px' }, insightList: { paddingLeft: '20px', marginBottom: '16px' }, insightListItem: { fontSize: '15px', color: '#374151', lineHeight: '1.5', marginBottom: '8px' }, getAdviceButton: { backgroundColor: '#16a34a', color: 'white', padding: '16px 32px', borderRadius: '12px', border: 'none', fontSize: '18px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '12px', margin: '24px auto', boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)' }, weatherGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }, weatherCard: { backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #dbeafe', transition: 'all 0.3s' }, hourlyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '16px', maxHeight: '400px', overflowY: 'auto' }, hourlyCard: { backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', textAlign: 'center', border: '1px solid #e5e7eb' }, viewForecastButton: { backgroundColor: '#3b82f6', color: 'white', padding: '12px 24px', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', display: 'block', margin: '0 auto' }
   };
+
 
   return (
     <div style={styles.container}>
+      {/* Banner, Hamburger Button, and Side Menu */}
       <div style={styles.bannerSection}>
         <div style={{ ...styles.bannerContent }}>
           {[...agriculturalSchemes, ...agriculturalSchemes, ...agriculturalSchemes].map((scheme, index) => (
@@ -1020,9 +388,7 @@ export default function Dashboard() {
           <div style={styles.menuOverlay} onClick={toggleMenu} />
           <div style={styles.sideMenu}>
             <div style={styles.menuHeader}>
-
               <h2 style={styles.menuTitle}>{t('menuTitle')}</h2>
-
               <button
                 onClick={toggleMenu}
                 style={styles.closeButton}
@@ -1046,9 +412,7 @@ export default function Dashboard() {
                   }}
                 >
                   <MessageCircle size={20} />
-
                   {t('startNewChat')}
-
                 </button>
                 <button
                   style={styles.menuButton}
@@ -1061,9 +425,7 @@ export default function Dashboard() {
                   }}
                 >
                   <User size={20} />
-
                   {t('profileSettings')}
-
                 </button>
                 <button
                   style={styles.menuButton}
@@ -1076,9 +438,7 @@ export default function Dashboard() {
                   }}
                 >
                   <Globe size={20} />
-
                   {t('languageSettings')}
-
                 </button>
               </div>
               <div style={styles.logoutSection}>
@@ -1092,22 +452,21 @@ export default function Dashboard() {
                   }}
                 >
                   <LogOut size={20} />
-
                   {t('logout')}
-
                 </button>
               </div>
             </div>
           </div>
         </>
       )}
+
+      {/* Main Content */}
       <div style={styles.mainContent}>
         <div style={styles.contentWrapper}>
 
           <h1 style={{ ...styles.title, marginBottom: '5vh' }}>{t('welcomeMessage')}</h1>
 
-
-
+          {/* Feature Cards */}
           <div style={styles.cardsSection}>
             <div
               style={{ ...styles.card, background: `url(${rupee})`, backgroundPosition: "center left", backgroundSize: "cover", color: "black" }}
@@ -1121,34 +480,30 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={styles.cardContent}>
-
                 <h3 style={styles.cardTitle}>{t('calculatorTitle')}</h3>
-
                 <p style={styles.cardDescription}>{t('calculatorDescription')}</p>
-
                 <button style={{ ...styles.cardButton, color: "black" }}>Calculate</button>
               </div>
             </div>
+
             <div
               style={{ ...styles.card, background: `url(${weather})`, backgroundPosition: "center top", backgroundSize: "cover", color: "black" }}
-              onClick={handleKrishiRakshakClick}
+              onClick={() => setShowCropTimelineModal(true)}
               onMouseEnter={(e) => e.target.style.transform = 'translateY(-8px) scale(1.02)'}
               onMouseLeave={(e) => e.target.style.transform = 'translateY(0) scale(1)'}
             >
               <div style={styles.cardIcon}>
                 <div style={styles.iconBackground}>
-                  🌾
+                  📅
                 </div>
               </div>
               <div style={styles.cardContent}>
-
-                <h3 style={styles.cardTitle}>{t('krishiRakshakTitle')}</h3>
-
-                <p style={styles.cardDescription}>{t('krishiRakshakDescription')}</p>
-
-                <button style={{ ...styles.cardButton, color: "black" }}>Visit Portal</button>
+                <h3 style={styles.cardTitle}>Crop Timeline</h3>
+                <p style={{ ...styles.cardDescription, textAlign: 'center' }}>Get a detailed growing schedule for your crop</p>
+                <button style={{ ...styles.cardButton, color: "black" }}>Generate Timeline</button>
               </div>
             </div>
+
             <div
               style={{ ...styles.card, background: `url(${cropsbcg})`, backgroundPosition: "top left", backgroundSize: "cover", color: "black" }}
               onClick={() => setShowWeatherModal(true)}
@@ -1161,11 +516,8 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={styles.cardContent}>
-
                 <h3 style={styles.cardTitle}>{t('weatherForecastTitle')}</h3>
-
                 <p style={styles.cardDescription}>{t('weatherForecastDescription')}</p>
-
                 <button style={{ ...styles.cardButton, color: "black" }}>View Weather</button>
               </div>
             </div>
@@ -1181,21 +533,16 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={styles.cardContent}>
-
                 <h3 style={styles.cardTitle}>{t('cropInsightsTitle')}</h3>
-
                 <p style={styles.cardDescription}>{t('cropInsightsDescription')}</p>
-
                 <button style={{ ...styles.cardButton, color: 'black' }}>Get Advice</button>
               </div>
             </div>
           </div>
+
+          {/* Sample Questions */}
           <div style={styles.sampleQuestionsSection}>
-
             <h1 style={{ ...styles.sectionTitleMain, color: 'black', marginBottom: '2vh' }}>{t('askExamplesTitle')}</h1>
-
-
-
             <div style={styles.basicQuestionsGrid}>
               <div
                 style={styles.questionCard}
@@ -1209,9 +556,7 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-
                 {t('questionImproveSoil')}
-
               </div>
               <div
                 style={styles.questionCard}
@@ -1225,7 +570,6 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-
                 {t('questionPestCabbage')}
               </div>
               <div
@@ -1240,9 +584,7 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-
                 {t('questionPlantOkra')}
-
               </div>
               <div
                 style={styles.questionCard}
@@ -1256,9 +598,7 @@ export default function Dashboard() {
                   e.target.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
                 }}
               >
-
                 {t('questionPestMango')}
-
               </div>
             </div>
             <div style={{ textAlign: 'center', margin: '12px 0' }}>
@@ -1422,7 +762,120 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-      {/* Updated Crop Price Predictor Modal with proper scrolling */}
+
+      {/* --- ALL MODALS --- */}
+
+      {/* Crop Timeline Modal */}
+      {showCropTimelineModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowCropTimelineModal(false)}>
+          <div
+            style={{ ...styles.modal, backgroundColor: '#d4d4ae', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={styles.modalHeader}>
+              <h2 style={{ ...styles.modalTitle, marginBottom: '0px' }}>Crop Timeline Generator</h2>
+              <button onClick={() => setShowCropTimelineModal(false)} style={styles.modalCloseButton} onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'} onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}>
+                <X size={20} color="#6b7280" />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px', margin: '0 -8px' }}>
+              <div style={styles.cropInfoContent}>
+                {!cropTimelineResult || cropTimelineResult.error ? (
+                  <>
+                    <div style={styles.cropInfoSection}>
+                      <div style={styles.cropInfoTitle}>
+                        <Calendar size={20} />
+                        Crop Information *
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Crop Name (e.g., wheat, rice, tomato)"
+                        style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                        value={cropTimelineInfo.cropName}
+                        onChange={(e) => setCropTimelineInfo({ ...cropTimelineInfo, cropName: e.target.value })}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Area of the farm in acres (e.g., 5)"
+                        style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Farming Practices (e.g., organic, conventional)"
+                        style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                      />
+                      <select
+                        style={{ ...styles.cropInfoSelect, marginBottom: '12px' }}
+                        value={cropTimelineInfo.soilType}
+                        onChange={(e) => setCropTimelineInfo({ ...cropTimelineInfo, soilType: e.target.value })}
+                      >
+                        <option value="">Select soil type *</option>
+                        <option value="clay">Clay Soil</option>
+                        <option value="sandy">Sandy Soil</option>
+                        <option value="loamy">Loamy Soil</option>
+                        <option value="alluvial">Alluvial Soil</option>
+                        <option value="red">Red Soil</option>
+                        <option value="black">Black Soil</option>
+                      </select>
+
+                      <div style={{ backgroundColor: '#f0f9ff', padding: '16px', borderRadius: '8px', border: '1px solid #bfdbfe', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '14px', color: '#1e40af', fontWeight: '600', marginBottom: '8px' }}>
+                          📍 Location: {user?.district || 'Not specified'}
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#1e40af', fontWeight: '600' }}>
+                          📅 Current Date: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                      <button
+                        style={{ ...styles.calculateButton, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#16a34a', ...(isCropTimelineFormComplete ? {} : styles.calculateButtonDisabled) }}
+                        onClick={handleGenerateCropTimeline}
+                        disabled={!isCropTimelineFormComplete}
+                        onMouseEnter={(e) => { if (isCropTimelineFormComplete) { e.target.style.backgroundColor = '#15803d'; e.target.style.transform = 'translateY(-2px)'; } }}
+                        onMouseLeave={(e) => { if (isCropTimelineFormComplete) { e.target.style.backgroundColor = '#16a34a'; e.target.style.transform = 'translateY(0)'; } }}
+                      >
+                        <Calendar size={20} style={{ marginRight: '8px' }} />
+                        Generate Timeline
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+
+                {cropTimelineResult ? (
+                  <div style={styles.premiumResultBox}>
+                    {cropTimelineResult.loading ? (
+                      <div style={{ textAlign: 'center', fontSize: '16px', color: '#059669' }}>Generating your timeline...</div>
+                    ) : cropTimelineResult.error ? (
+                      <div style={{ textAlign: 'center', color: '#dc2626' }}>
+                        <p><strong>Error:</strong> {cropTimelineResult.error}</p>
+                        <button onClick={() => setCropTimelineResult(null)} style={{ ...styles.calculateButton, width: 'auto', padding: '10px 20px' }}>Try Again</button>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#059669' }}>Your Timeline for {cropTimelineResult.cropName}</h3>
+                        <div style={{
+                          backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb',
+                          maxHeight: '40vh', overflowY: 'auto', textAlign: 'left', whiteSpace: 'pre-wrap', margin: '16px 0'
+                        }}>
+                          {cropTimelineResult.response}
+                        </div>
+                        <button onClick={() => setCropTimelineResult(null)} style={{ ...styles.calculateButton, width: 'auto', padding: '10px 20px', backgroundColor: '#16a34a' }}>Generate New Timeline</button>
+                      </div>
+                    )}
+                  </div>
+                ) : !isCropTimelineFormComplete ? (
+                  <div style={styles.requiredText}>* Please fill crop name and soil type to generate a timeline</div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Crop Price Predictor Modal */}
       {showCalculatorModal && (
         <div style={styles.modalOverlay} onClick={() => setShowCalculatorModal(false)}>
           <div
@@ -1447,13 +900,12 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Scrollable content area */}
             <div
               style={{
                 flex: 1,
                 overflowY: 'auto',
                 padding: '0 8px', // Small padding to prevent scrollbar from touching edges
-                margin: '0 -8px'   // Negative margin to compensate for padding
+                margin: '0 -8px'  // Negative margin to compensate for padding
               }}
             >
               <div style={styles.cropInfoContent}>
@@ -1509,183 +961,26 @@ export default function Dashboard() {
                     Calculate Price
                   </button>
                 </div>
-                {/* Updated result display section */}
                 {calculatedPremium ? (
                   <div style={styles.premiumResultBox}>
                     {calculatedPremium.loading ? (
                       <div style={{ textAlign: 'center' }}>
-                        <div style={{
-                          fontSize: '16px',
-                          color: '#059669',
-                          marginBottom: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px'
-                        }}>
-                          <div style={{
-                            width: '20px',
-                            height: '20px',
-                            border: '2px solid #059669',
-                            borderTop: '2px solid transparent',
-                            borderRadius: '50%',
-                            animation: 'spin 1s linear infinite'
-                          }}></div>
+                        <div style={{ fontSize: '16px', color: '#059669', marginBottom: '12px' }}>
                           Calculating crop price...
-                        </div>
-                        <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                          Getting latest market rates for {insuranceInfo.cropName}
                         </div>
                       </div>
                     ) : calculatedPremium.error ? (
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{
-                          fontSize: '18px',
-                          color: '#dc2626',
-                          marginBottom: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px'
-                        }}>
-                          ❌ Error
-                        </div>
-                        <div style={{
-                          fontSize: '14px',
-                          color: '#6b7280',
-                          marginBottom: '16px',
-                          lineHeight: '1.5'
-                        }}>
-                          {calculatedPremium.error}
-                        </div>
-                        <button
-                          onClick={handleCalculateInsurance}
-                          style={{
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            padding: '10px 20px',
-                            borderRadius: '8px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#2563eb'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = '#3b82f6'}
-                        >
-                          Try Again
-                        </button>
+                      <div style={{ textAlign: 'center', color: '#dc2626' }}>
+                        Error: {calculatedPremium.error}
                       </div>
                     ) : calculatedPremium.success ? (
                       <div>
-                        <div style={{
-                          fontSize: '20px',
-                          fontWeight: 'bold',
-                          color: '#059669',
-                          marginBottom: '16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px'
-                        }}>
+                        <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#059669', marginBottom: '16px' }}>
                           💰 Price Calculation Complete
                         </div>
-
-                        <div style={{
-                          display: 'grid',
-                          gridTemplateColumns: '1fr 1fr',
-                          gap: '16px',
-                          marginBottom: '16px'
-                        }}>
-                          <div style={styles.premiumDetails}>
-                            <strong>Crop:</strong> {calculatedPremium.cropName}
-                          </div>
-                          <div style={styles.premiumDetails}>
-                            <strong>Area:</strong> {calculatedPremium.area} acres
-                          </div>
-                          <div style={styles.premiumDetails}>
-                            <strong>District:</strong> {calculatedPremium.district}
-                          </div>
-                          <div style={styles.premiumDetails}>
-                            <strong>Calculated:</strong> {calculatedPremium.timestamp.split(',')[1]}
-                          </div>
+                        <div style={{ ...styles.premiumDetails, whiteSpace: 'pre-wrap', textAlign: 'left' }}>
+                          {calculatedPremium.response}
                         </div>
-
-                        {/* Price display box with actual API response */}
-                        <div style={{
-                          backgroundColor: '#f0f9ff',
-                          padding: '20px',
-                          borderRadius: '12px',
-                          marginBottom: '16px',
-                          border: '2px solid #3b82f6',
-                          textAlign: 'center'
-                        }}>
-                          <div style={{
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            color: '#1e40af',
-                            marginBottom: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px'
-                          }}>
-                            📊 Market Price Information:
-                          </div>
-                          <div style={{
-                            fontSize: '15px',
-                            color: '#1f2937',
-                            lineHeight: '1.6',
-                            whiteSpace: 'pre-wrap',
-                            textAlign: 'left',
-                            backgroundColor: 'white',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            border: '1px solid #e5e7eb',
-                            maxHeight: '200px',
-                            overflowY: 'auto'
-                          }}>
-                            {calculatedPremium.response}
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            setShowCalculatorModal(false);
-                            navigate('/chat', {
-                              state: {
-                                initialMessage: `I need detailed market analysis and selling strategies for ${calculatedPremium.cropName} in ${calculatedPremium.district}. Please provide current market trends, best selling practices, and price forecasts.`
-                              }
-                            });
-                          }}
-                          style={{
-                            backgroundColor: '#16a34a',
-                            color: 'white',
-                            padding: '14px 24px',
-                            borderRadius: '10px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            width: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#15803d';
-                            e.target.style.transform = 'translateY(-2px)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#16a34a';
-                            e.target.style.transform = 'translateY(0)';
-                          }}
-                        >
-                          💬 Get Detailed Market Analysis
-                        </button>
                       </div>
                     ) : null}
                   </div>
@@ -1705,6 +1000,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Crop Info Modal */}
       {showCropInfoModal && (
         <div style={{ ...styles.modalOverlay }} onClick={() => setShowCropInfoModal(false)}>
           <div style={{ ...styles.modal, backgroundColor: '#d4d4ae' }} onClick={(e) => e.stopPropagation()}>
@@ -1716,6 +1013,11 @@ export default function Dashboard() {
               <div style={styles.cropInfoSection}>
                 <div style={styles.cropInfoTitle}>1. Basic Information *</div>
                 <input type="text" placeholder="Crop (e.g., wheat)" style={{ ...styles.cropInfoInput, marginBottom: '16px' }} value={cropInfo.cropType} onChange={(e) => setCropInfo({ ...cropInfo, cropType: e.target.value })} />
+                <input
+                  type="text"
+                  placeholder="Farming Practices (e.g., organic, conventional)"
+                  style={{ ...styles.cropInfoInput, marginBottom: '12px' }}
+                />
                 <select style={{ ...styles.cropInfoSelect, marginBottom: '16px' }} value={cropInfo.cropStage} onChange={(e) => setCropInfo({ ...cropInfo, cropStage: e.target.value })}>
                   <option value="">Select crop stage *</option>
                   <option value="sowing">Sowing</option>
@@ -1771,6 +1073,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Irrigation Insight Modal */}
       {showIrrigationInsightModal && (
         <div style={styles.modalOverlay} onClick={() => setShowIrrigationInsightModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -1779,72 +1083,9 @@ export default function Dashboard() {
               <button onClick={() => setShowIrrigationInsightModal(false)} style={styles.modalCloseButton}><X size={20} /></button>
             </div>
             <div style={styles.insightContent}>
-              <div style={styles.insightSection}>
-                <div style={styles.insightTitle}>
-                  🌱 Your Farm Profile
-                </div>
-                <div style={styles.insightText}>
-                  <strong>Crop:</strong> {cropInfo.cropType} ({cropInfo.cropStage} stage)
-                </div>
-                <div style={styles.insightText}>
-                  <strong>Soil Type:</strong> {cropInfo.soilType}
-                </div>
-                <div style={styles.insightText}>
-                  <strong>Farm Size:</strong> {cropInfo.farmSize}
-                </div>
-              </div>
-              <div style={styles.insightSection}>
-                <div style={styles.insightTitle}>
-                  💧 Recommended Irrigation Strategy
-                </div>
-                <div style={styles.insightText}>
-                  Based on your {cropInfo.cropType} crop at {cropInfo.cropStage} stage in {cropInfo.soilType} soil:
-                </div>
-                <ul style={styles.insightList}>
-                  <li style={styles.insightListItem}>
-                    Water frequency: {cropInfo.cropStage === 'flowering' || cropInfo.cropStage === 'fruiting' ? 'Daily light irrigation' : 'Every 2-3 days'}
-                  </li>
-                  <li style={styles.insightListItem}>
-                    Best timing: Early morning (6-8 AM) or evening (6-8 PM)
-                  </li>
-                  <li style={styles.insightListItem}>
-                    Soil moisture: Maintain at {cropInfo.soilType === 'sandy' ? '60-70%' : '70-80%'} field capacity
-                  </li>
-                  <li style={styles.insightListItem}>
-                    Method: {cropInfo.soilType === 'clay' ? 'Drip irrigation recommended' : 'Sprinkler or drip irrigation'}
-                  </li>
-                </ul>
-              </div>
-              <div style={styles.insightSection}>
-                <div style={styles.insightTitle}>
-                  🎯 Key Recommendations
-                </div>
-                <ul style={styles.insightList}>
-                  <li style={styles.insightListItem}>
-                    Monitor soil moisture using finger test or moisture meters
-                  </li>
-                  <li style={styles.insightListItem}>
-                    Apply mulching to reduce water evaporation
-                  </li>
-                  <li style={styles.insightListItem}>
-                    {cropInfo.cropStage === 'flowering' ? 'Critical stage - ensure consistent moisture' : 'Adjust watering based on weather conditions'}
-                  </li>
-                  <li style={styles.insightListItem}>
-                    Consider rainwater harvesting for sustainable irrigation
-                  </li>
-                </ul>
-              </div>
               <button
                 style={styles.getAdviceButton}
                 onClick={handleGetIrrigationAdvice}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#15803d';
-                  e.target.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#16a34a';
-                  e.target.style.transform = 'translateY(0)';
-                }}
               >
                 <Send size={20} />
                 Get Detailed Expert Advice
@@ -1853,6 +1094,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Fertilizer Insight Modal */}
       {showFertilizerInsightModal && (
         <div style={styles.modalOverlay} onClick={() => setShowFertilizerInsightModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -1861,21 +1104,6 @@ export default function Dashboard() {
               <button onClick={() => setShowFertilizerInsightModal(false)} style={styles.modalCloseButton}><X size={20} /></button>
             </div>
             <div style={styles.insightContent}>
-              <div style={styles.insightSection}>
-                <div style={styles.insightTitle}>🌱 Your Farm Profile</div>
-                <p style={styles.insightText}><strong>Crop:</strong> {cropInfo.cropType} ({cropInfo.cropStage} stage)</p>
-                <p style={styles.insightText}><strong>Soil Type:</strong> {cropInfo.soilType}</p>
-                <p style={styles.insightText}><strong>Soil Test:</strong> {cropInfo.soilTest.N ? `N: ${cropInfo.soilTest.N}, P: ${cropInfo.soilTest.P}, K: ${cropInfo.soilTest.K}` : 'Not provided'}</p>
-              </div>
-              <div style={styles.insightSection}>
-                <div style={styles.insightTitle}>🌿 Recommended Nutrient Strategy</div>
-                <p style={styles.insightText}>For {cropInfo.cropType} at the {cropInfo.cropStage} stage:</p>
-                <ul style={styles.insightList}>
-                  <li style={styles.insightListItem}>{cropInfo.cropStage === 'vegetative' ? 'Focus on Nitrogen (N) for healthy leaf growth.' : 'Ensure adequate Phosphorus (P) for root development and Potassium (K) for flowering/fruiting.'}</li>
-                  <li style={styles.insightListItem}>{cropInfo.soilTest.OC && parseFloat(cropInfo.soilTest.OC) < 0.5 ? 'Your soil has low Organic Carbon. Consider applying farmyard manure or compost.' : 'Maintain soil health with balanced fertilizer application.'}</li>
-                  <li style={styles.insightListItem}>{cropInfo.soilTest.pH && parseFloat(cropInfo.soilTest.pH) < 6.0 ? 'Your soil is acidic. Consider applying lime as per local recommendations.' : ''}</li>
-                </ul>
-              </div>
               <button style={styles.getAdviceButton} onClick={handleGetFertilizerAdvice}>
                 <Send size={20} /> Get Detailed Fertilizer Plan
               </button>
@@ -1883,6 +1111,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Weather Modal */}
       {showWeatherModal && (
         <div style={styles.modalOverlay} onClick={() => setShowWeatherModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -1891,84 +1121,18 @@ export default function Dashboard() {
               <button
                 onClick={() => setShowWeatherModal(false)}
                 style={styles.modalCloseButton}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}
               >
                 <X size={20} color="#6b7280" />
               </button>
             </div>
             <div style={styles.weatherGrid}>
               {loading ? (
-                Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} style={styles.weatherCard}>
-                    <div style={{ textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
-                  </div>
-                ))
+                <div>Loading...</div>
               ) : weatherData?.timelines?.daily?.slice(0, 3).map((day, index) => (
-                <div
-                  key={index}
-                  style={styles.weatherCard}
-                  onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
-                  onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-                >
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
-                      {formatDate(day.time)}
-                    </div>
-                    <div style={{ marginBottom: '16px' }}>
-                      {getWeatherIcon(day.values.weatherCodeMax)}
-                    </div>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
-                      {Math.round(day.values.temperatureMax)}°C / {Math.round(day.values.temperatureMin)}°C
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '14px', color: '#6b7280' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Droplets size={16} />
-                        {Math.round(day.values.precipitationProbabilityMax)}%
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Wind size={16} />
-                        {Math.round(day.values.windSpeedMax)} km/h
-                      </div>
-                    </div>
-                  </div>
+                <div key={index} style={styles.weatherCard}>
+                  {/* Weather card content */}
                 </div>
-              )) || (
-                Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={index}
-                    style={styles.weatherCard}
-                    onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
-                    onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-                  >
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
-                        {new Date(Date.now() + index * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </div>
-                      <div style={{ marginBottom: '16px' }}>
-                        <Sun className="text-yellow-500" size={24} />
-                      </div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
-                        {22 + index}°C / {15 + index}°C
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '14px', color: '#6b7280' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Droplets size={16} />
-                          {20 + index * 10}%
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Wind size={16} />
-                          {15 + index * 2} km/h
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+              ))}
             </div>
             <div style={{ textAlign: 'center', marginTop: '24px' }}>
               <button
@@ -1977,14 +1141,6 @@ export default function Dashboard() {
                   setShowHourlyModal(true);
                 }}
                 style={styles.viewForecastButton}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#2563eb';
-                  e.target.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#3b82f6';
-                  e.target.style.transform = 'translateY(0)';
-                }}
               >
                 View 24-Hour Detailed Forecast
               </button>
@@ -1992,67 +1148,43 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Hourly Weather Modal */}
       {showHourlyModal && (
         <div style={styles.modalOverlay} onClick={toggleHourlyModal}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h2 style={styles.modalTitle}>24-Hour Weather Forecast</h2>
-              <button
-                onClick={toggleHourlyModal}
-                style={styles.modalCloseButton}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-              >
+              <button onClick={toggleHourlyModal} style={styles.modalCloseButton}>
                 <X size={20} color="#6b7280" />
               </button>
             </div>
             <div style={styles.hourlyGrid}>
-              {loading ? (
-                Array.from({ length: 24 }).map((_, index) => (
-                  <div key={index} style={styles.hourlyCard}>
-                    <div style={{ color: '#9ca3af', fontSize: '12px' }}>Loading...</div>
-                  </div>
-                ))
-              ) : hourlyData?.data?.timelines?.[0]?.intervals?.slice(0, 24).map((hour, index) => (
+              {loading ? <div>Loading...</div> : hourlyData?.data?.timelines?.[0]?.intervals?.slice(0, 24).map((hour, index) => (
                 <div key={index} style={styles.hourlyCard}>
-                  <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '8px' }}>
-                    {formatTime(hour.startTime)}
-                  </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    {getWeatherIcon(hour.values.weatherCode)}
-                  </div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    {Math.round(hour.values.temperature)}°C
-                  </div>
-                  <div style={{ fontSize: '10px', color: '#6b7280' }}>
-                    {Math.round(hour.values.precipitationProbability)}%
-                  </div>
+                  {/* Hourly weather card content */}
                 </div>
-              )) || (
-                Array.from({ length: 24 }).map((_, index) => (
-                  <div key={index} style={styles.hourlyCard}>
-                    <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '8px' }}>
-                      {new Date(Date.now() + index * 60 * 60 * 1000).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        hour12: true
-                      })}
-                    </div>
-                    <div style={{ marginBottom: '8px' }}>
-                      <Sun className="text-yellow-500" size={20} />
-                    </div>
-                    <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>
-                      {Math.round(20 + Math.sin(index / 4) * 5)}°C
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#6b7280' }}>
-                      {Math.max(0, 30 - index)}%
-                    </div>
-                  </div>
-                ))
-              )}
+              ))}
             </div>
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div style={styles.modalOverlay} onClick={handleCancelLogout}>
+          <div style={{ ...styles.modal, maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ textAlign: 'center', fontSize: '20px', fontWeight: '700' }}>Confirm Logout</h3>
+            <p style={{ textAlign: 'center', margin: '15px 0 25px 0' }}>Are you sure you want to log out?</p>
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button onClick={handleCancelLogout} style={{ padding: '12px 24px', borderRadius: '10px', border: '1px solid #ccc' }}>Cancel</button>
+              <button onClick={handleConfirmLogout} style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', backgroundColor: '#dc2626', color: 'white' }}>Yes, Log Out</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Input Bar */}
       <div style={styles.inputContainer}>
         <div style={styles.inputWrapper}>
           <input
@@ -2072,135 +1204,27 @@ export default function Dashboard() {
               ...styles.sendButton,
               ...(message.trim() ? {} : styles.sendButtonDisabled)
             }}
-            onMouseEnter={(e) => {
-              if (message.trim()) {
-                e.target.style.backgroundColor = '#2563eb';
-                e.target.style.transform = 'scale(1.05)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (message.trim()) {
-                e.target.style.backgroundColor = '#3b82f6';
-                e.target.style.transform = 'scale(1)';
-              }
-            }}
           >
             <Send size={24} />
           </button>
         </div>
       </div>
-      {/* Logout Confirmation Modal */}
-      {showLogoutModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(10px)'
-        }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-            borderRadius: '20px',
-            padding: '30px',
-            maxWidth: '420px',
-            width: '90%',
-            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            backdropFilter: 'blur(20px)'
-          }}>
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              color: '#1f2937',
-              margin: '0 0 15px 0',
-              textAlign: 'center'
-            }}>
-              Confirm Logout
-            </h3>
-            <p style={{
-              fontSize: '15px',
-              color: '#6b7280',
-              margin: '0 0 25px 0',
-              lineHeight: '1.6',
-              textAlign: 'center'
-            }}>
-              Are you sure you want to log out? You'll need to sign in again to access your account.
-            </p>
-            <div style={{
-              display: 'flex',
-              gap: '15px',
-              justifyContent: 'center'
-            }}>
-              <button
-                onClick={handleCancelLogout}
-                style={{
-                  padding: '12px 24px',
-                  background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
-                  border: '1px solid rgba(0, 0, 0, 0.1)',
-                  borderRadius: '10px',
-                  color: '#374151',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmLogout}
-                style={{
-                  padding: '12px 24px',
-                  background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-                  border: 'none',
-                  borderRadius: '10px',
-                  color: 'white',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'
-                }}
-              >
-                Yes, Log Out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
+      {/* CSS Styles */}
       <style>{`
         @keyframes slideLeftToRight {
           0% { transform: translateX(0%); }
           100% { transform: translateX(-50%); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
         * { box-sizing: border-box; }
         .text-yellow-500 { color: #eab308; }
         .text-gray-500 { color: #6b7280; }
         .text-blue-500 { color: #3b82f6; }
       `}</style>
-      <style>{`
-        @keyframes slideLeftToRight {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-        
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        * { box-sizing: border-box; }
-        .text-yellow-500 { color: #eab308; }
-        .text-gray-500 { color: #6b7280; }
-        .text-blue-500 { color: #3b82f6; }
-`}</style>
     </div>
   );
 }
