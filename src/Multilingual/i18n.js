@@ -149,7 +149,7 @@ i18n
   districtPlaceholder: "Enter your district",
   passwordLabel: "Password",
   passwordPlaceholder: "Enter your password",
-  confirmPasswordLabel: "Confirm Password *",
+  confirmPasswordLabel: "Confirm Password",
   confirmPasswordPlaceholder: "Confirm your password",
   signUpButton: "Sign Up",
   hasAccount: "Already have an account?",
