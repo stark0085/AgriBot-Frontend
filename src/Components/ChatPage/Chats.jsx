@@ -62,13 +62,13 @@ function Chats() {
       console.log('Sending message to API:', userMessage);
       
       // Using axios to make the API call with timeout and better configuration
-      const response = await axios.post('http://localhost:3000/messages/sendmessage', 
+      const response = await axios.post('https://agri-bot-backend-ba3f.vercel.app/messages/sendmessage', 
         {
           email: user.email,
           query: userMessage,
         },
         {
-          timeout: 30000, // 30 second timeout
+          timeout: 30000000, // 30 second timeout
           headers: {
             'Content-Type': 'application/json',
           }

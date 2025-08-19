@@ -89,7 +89,7 @@ AgriBot/
    ```bash
    npm start
    ```
-   The backend will run on [http://localhost:3000](http://localhost:3000).
+   The backend will run on [https://agri-bot-backend-ba3f.vercel.app/](https://agri-bot-backend-ba3f.vercel.app/).
 
 ---
 
@@ -109,7 +109,7 @@ AgriBot/
    ```bash
    npm start
    ```
-   The frontend will run on [http://localhost:5173](http://localhost:5173) (or another port if configured).
+   The frontend will run on [https://agri-bot-frontend.vercel.app/](https://agri-bot-frontend.vercel.app/) (or another port if configured).
 
 ---
 
@@ -123,14 +123,14 @@ AgriBot/
 - **Frontend:**  
   - If you use environment variables (e.g., for API URLs), create a `.env` file in `AgriBot-Frontend`:
     ```
-    VITE_API_URL=http://localhost:3000
+    VITE_API_URL=https://agri-bot-backend-ba3f.vercel.app/
     ```
 
 ---
 
 ## Usage
 
-- Visit the frontend URL in your browser.
+- Visit the frontend URL in your browser: [https://agri-bot-frontend.vercel.app/](https://agri-bot-frontend.vercel.app/)
 - Sign up or log in.
 - Explore the dashboard, chat with the bot, check weather, manage your profile, and more.
 
@@ -146,4 +146,4 @@ For major changes, please open an issue first to discuss what you would like to 
 ## License
 
 [MIT](LICENSE)  
-(c) 2025 AgriBot Team
+(c) 2025

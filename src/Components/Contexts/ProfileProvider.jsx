@@ -51,7 +51,7 @@ const ProfileProvider = ({ children }) => {
   //  Logs the user in using axios
   const login = async (credentials) => {
     try {
-      const response = await axios.post('http://localhost:3000/auth/signin', credentials);
+      const response = await axios.post('https://agri-bot-backend-ba3f.vercel.app/auth/signin', credentials);
       const data = response.data; // axios wraps the response in a `data` object
 
       if (data.code === 0) {
@@ -84,7 +84,7 @@ const ProfileProvider = ({ children }) => {
   // Signs the user up using axios
   const signup = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:3000/auth/signup', userData);
+      const response = await axios.post('https://agri-bot-backend-ba3f.vercel.app/auth/signup', userData);
       const data = response.data;
 
       if (data.code === 0) {

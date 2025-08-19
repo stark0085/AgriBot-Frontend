@@ -70,7 +70,7 @@ const ProfilePage = () => {
     setIsUpdating(true);
     
     try {
-      const response = await fetch('http://localhost:3000/auth/updateLocation', {
+      const response = await fetch('https://agri-bot-backend-ba3f.vercel.app/auth/updateLocation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
