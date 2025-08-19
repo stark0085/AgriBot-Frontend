@@ -80,6 +80,17 @@ export default function Dashboard() {
     }
   ];
 
+
+  const getWeatherIcon = (code) => {
+    if (code <= 1100) return <Sun className="text-yellow-500" size={24} />;
+    if (code <= 2100) return <Cloud className="text-gray-500" size={24} />;
+    return <CloudRain className="text-blue-500" size={24} />;
+  };
+
+  const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const formatTime = (dateString) => new Date(dateString).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+
+
   // Handle scheme rotation
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1242,7 +1253,7 @@ export default function Dashboard() {
       )}
 
       {/* Weather Modal */}
-      {showWeatherModal && (
+      {/* {showWeatherModal && (
         <div style={styles.modalOverlay} onClick={() => setShowWeatherModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
@@ -1259,7 +1270,7 @@ export default function Dashboard() {
                 <div>Loading...</div>
               ) : weatherData?.timelines?.daily?.slice(0, 3).map((day, index) => (
                 <div key={index} style={styles.weatherCard}>
-                  {/* Weather card content */}
+                  Weather card content
                 </div>
               ))}
             </div>
@@ -1276,10 +1287,10 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Hourly Weather Modal */}
-      {showHourlyModal && (
+      {/* {showHourlyModal && (
         <div style={styles.modalOverlay} onClick={toggleHourlyModal}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
@@ -1291,13 +1302,13 @@ export default function Dashboard() {
             <div style={styles.hourlyGrid}>
               {loading ? <div>Loading...</div> : hourlyData?.data?.timelines?.[0]?.intervals?.slice(0, 24).map((hour, index) => (
                 <div key={index} style={styles.hourlyCard}>
-                  {/* Hourly weather card content */}
+                  Hourly weather card /content
                 </div>
               ))}
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
