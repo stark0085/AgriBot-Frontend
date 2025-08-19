@@ -6,6 +6,7 @@ import ProfileProvider from './Components/Contexts/ProfileProvider';
 import { ProtectedRoute, PublicRoute } from './Components/Contexts/ProtectedRoute';
 import './App.css';
 import './index.css';
+
 // Import your components
 import Chats from './Components/ChatPage/Chats';
 import Dashboard from './Components/Dashboard/Dashboard';
@@ -101,7 +102,12 @@ function App() {
               }
             />
 
-            {/* Catch all route - redirect to home (language selection) */}
+            {/* This is the catch-all route. If a user tries to access any URL
+              that is not defined above (e.g., /about, /contact), they will be
+              redirected to the homepage ("/"). The 'replace' prop ensures
+              that the incorrect URL is replaced in the browser's history,
+              so the user can't click the "back" button to go to it again.
+            */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
